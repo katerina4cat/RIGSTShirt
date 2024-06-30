@@ -1,0 +1,10 @@
+type Mutation {
+    addProduct(product: NewProductInput!): Product
+    updateProductPrice(id: Int!, newPrice: Float!): Product
+    deleteProduct(id: Int!, recovery: Boolean): Boolean
+}
+type Query {
+    getProducts(id: ID, showDeleted: Boolean): [Product]
+    login(login: String!, password: String!): String
+    getSizes: [Size]
+}

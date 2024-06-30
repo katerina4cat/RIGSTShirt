@@ -1,0 +1,13 @@
+type Product {
+    id: Int!
+    title: String!
+    description: String!
+    price: Float!
+    previousPrice: Float
+    sizes: [Size]!
+}
+
+type Size {
+    id: Int!
+    title: String!
+}

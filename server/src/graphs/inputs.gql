@@ -1,0 +1,21 @@
+input NewProductInput {
+    title: String!
+    description: String!
+    price: Float!
+    sizes: [Int!]
+}
+
+input ProductOrderInput {
+    id: Int!
+    size: Int!
+    count: Int!
+}
+
+input CreateOrderInput {
+    name: String!
+    surname: String!
+    lastname: String
+    phone: String!
+    email: String!
+    products: [ProductOrderInput]!
+}
