@@ -5,6 +5,9 @@ type Mutation {
 }
 type Query {
     getProducts(id: ID, showDeleted: Boolean): [Product]
-    login(login: String!, password: String!): String
     getSizes: [Size]
+
+    register(login: String!, password: String!): Boolean
+    login(login: String!, password: String!): Boolean
+    logout: Boolean
 }

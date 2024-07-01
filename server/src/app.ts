@@ -2,11 +2,11 @@ import dotenv from "dotenv";
 dotenv.config();
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import express from "express";
+import express, { Response, Request, NextFunction } from "express";
 import { credentials } from "../env";
 import { graphqlHTTP } from "express-graphql";
-import schema from "graphs/schema";
-import root from "graphs/root";
+import schema from "graphql/schema";
+import root from "graphql/root";
 
 const app = express();
 
