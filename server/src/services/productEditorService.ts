@@ -1,16 +1,16 @@
 import { IContext } from "app";
 import DBManager from "database/DBManager";
-import { IProduct } from "database/interfaces";
+import { IProduct, IResultProduct } from "database/interfaces";
 import { ApiError } from "exceptions/errorService";
-import { NewProductInput } from "graphql/models";
+import { NewProductInput, UpdateProductInput } from "graphql/models";
 import root from "graphql/root";
 import tokenService from "./tokenService";
 
-export const adminServices = {
+export const productEditorServices = {
     addProduct: async (
         { product }: { product: NewProductInput },
         context: IContext
-    ) => {
+    ): Promise<IResultProduct | ApiError> => {
         const payload = await tokenService.validateAcessToken(context);
         if (payload instanceof ApiError) return payload;
         await DBManager.query(
@@ -33,18 +33,45 @@ export const adminServices = {
         DBManager.connection.commit();
         return (await root.getProducts({ id: createdProduct.id }))[0];
     },
-    updateProductPrice: async (
-        data: { id: number; newPrice: number },
+    updateProduct: async (
+        {
+            id,
+            updatedFields,
+        }: { id: number; updatedFields: UpdateProductInput },
         context: IContext
-    ) => {
+    ): Promise<IResultProduct | ApiError> => {
         const payload = await tokenService.validateAcessToken(context);
         if (payload instanceof ApiError) return payload;
 
-        await DBManager.query(
-            `INSERT INTO priceHistory(id, workerID, price) VALUES(${data.id}, ${payload.id}, "${data.newPrice}");`
-        );
+        if (!Object.keys(updatedFields).length)
+            return ApiError.BadRequest("Вы не изменили ни 1 значения товара");
+
+        if (updatedFields.price)
+            await DBManager.query(
+                `INSERT INTO priceHistory(id, workerID, price) VALUES(${id}, ${payload.id}, "${updatedFields.price}");`
+            );
+        if (updatedFields.title || updatedFields.description)
+            await DBManager.query(
+                `UPDATE product SET ${[
+                    updatedFields.title && `title="${updatedFields.title}"`,
+                    updatedFields.description &&
+                        `description="${updatedFields.description}"`,
+                ]
+                    .filter(Boolean)
+                    .join(",")} WHERE id=${id};`
+            );
+
+        if (updatedFields.sizes) {
+            await DBManager.query(`DELETE FROM sizes WHERE productID=${id};`);
+            await DBManager.query(
+                `INSERT INTO sizes VALUES
+                    ${updatedFields.sizes
+                        .map((sizeID) => `(${id},${sizeID})`)
+                        .join(",")};`
+            );
+        }
         DBManager.connection.commit();
-        return (await root.getProducts({ id: data.id }))[0];
+        return (await root.getProducts({ id: id }))[0];
     },
     deleteProduct: async (
         {
@@ -55,7 +82,7 @@ export const adminServices = {
             recovery?: boolean;
         },
         context: IContext
-    ) => {
+    ): Promise<Boolean | ApiError> => {
         await tokenService.validateAcessToken(context);
         await DBManager.query(
             `UPDATE product SET deleted=${recovery ? 0 : 1} WHERE id=${id};`

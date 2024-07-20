@@ -1,9 +1,12 @@
 import DBManager from "database/DBManager";
-import { IResultProduct } from "database/interfaces";
+import { IResultProduct, ISize } from "database/interfaces";
 import { ProductsQuery } from "graphql/models";
 
 export const productsServices = {
-    getProducts: async ({ id, showDeleted }: ProductsQuery) => {
+    getProducts: async ({
+        id,
+        showDeleted,
+    }: ProductsQuery): Promise<IResultProduct[]> => {
         let query = `SELECT
     product.*,
     getPrice(product.id) AS price,
@@ -21,7 +24,7 @@ FROM
         const products = await DBManager.query<IResultProduct>(query + ";");
         return products;
     },
-    getSizes: async () => {
-        return await DBManager.query(`SELECT * FROM size;`);
+    getSizes: async (): Promise<ISize[]> => {
+        return await DBManager.query<ISize>(`SELECT * FROM size;`);
     },
 };

@@ -11,3 +11,42 @@ type Size {
     id: Int!
     title: String!
 }
+
+# Admins types + only readed users
+
+type OrderProduct {
+    id: Int!
+    title: String!
+    description: String!
+    deleted: Boolean!
+    size: String!
+    count: Int!
+    price: Float!
+}
+
+type OrderInfo {
+    id: Int!
+    client: ClientInfo!
+    deliveryType: Int!
+    status: String!
+    PVZID: String
+    products: [OrderProduct!]!
+}
+
+type ClientInfo {
+    id: Int!
+    name: String!
+    surname: String!
+    lastname: String
+    phone: String!
+    email: String!
+    sale: Float
+}
+
+type DeliveryInfo {
+    latitude: Float!
+    longitude: Float!
+    entrance: String!
+    apartment: String!
+    description: String
+}

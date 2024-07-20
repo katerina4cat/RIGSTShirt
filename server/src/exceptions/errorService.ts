@@ -15,4 +15,10 @@ export class ApiError extends Error {
     static RuntimeError(message: string, errors: any[] = []) {
         return new ApiError(400, message, errors);
     }
+    static UnrealizedError(message?: string) {
+        return new ApiError(
+            501,
+            message || "Данный функционал ещё не реализован!"
+        );
+    }
 }

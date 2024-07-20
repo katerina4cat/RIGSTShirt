@@ -1,0 +1,10 @@
+https://www.cdek.ru/api-site/website/office/
+POST
+
+locale:ru
+coords%5BstartLat%5D:55.6173512036797
+coords%5BstartLong%5D:37.221221621728894
+coords%5BendLat%5D:55.86912103827125
+coords%5BendLong%5D:38.01223724672887
+limit:100
+page:10

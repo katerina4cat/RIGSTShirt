@@ -5,17 +5,43 @@ input NewProductInput {
     sizes: [Int!]
 }
 
-input ProductOrderInput {
+input UpdateProductInput {
+    title: String
+    description: String
+    price: Float
+    sizes: [Int!]
+}
+
+input CartOrderInput {
     id: Int!
     size: Int!
     count: Int!
 }
 
-input CreateOrderInput {
+input UserInfoInput {
     name: String!
     surname: String!
     lastname: String
     phone: String!
     email: String!
-    products: [ProductOrderInput]!
+}
+
+input CustomPointInput {
+    latitude: Float!
+    longitude: Float!
+    entrance: String!
+    apartment: String!
+    description: String
+}
+
+input DeliveryInput {
+    deliveryType: Int!
+    PVZID: String
+    customPoint: CustomPointInput
+}
+
+input OrderFilterInput {
+    orderID: Int
+    deliveryType: Int
+    orderStatus: Int
 }

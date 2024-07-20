@@ -1,11 +1,13 @@
-import { adminServices } from "services/adminService";
 import { authServices } from "services/authService";
+import { orderService } from "services/orderService";
+import { productEditorServices } from "services/productEditorService";
 import { productsServices } from "services/productsService";
 
 const root = {
     ...authServices,
     ...productsServices,
-    ...adminServices,
+    ...orderService,
+    ...productEditorServices,
 };
 
 export default root;

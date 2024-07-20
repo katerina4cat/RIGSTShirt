@@ -1,0 +1,89 @@
+https://widget.pochta.ru/api/pvz
+
+POST
+{
+    "settings_id": 50317, // id на странице https://widget.pochta.ru/sites/10970/pickup-point-delivery/code
+    "pageSize": 200,
+    "page": 1,
+    "currentTopRightPoint": [
+        34.44758916357423,
+        55.057620532762904
+    ],
+    "currentBottomLeftPoint": [
+        38.49055791357422,
+        57.13272544502516
+    ],
+    "prevTopRightPoint": [
+        37.19314122656249,
+        55.88564436974453
+    ],
+    "prevBottomLeftPoint": [
+        37.44582677343749,
+        55.7549834694016
+    ],
+    "pvzType": [
+        "russian_post",
+        "postamat"
+    ]
+}
+
+
+query websiteOfficeByCode(
+  $code: String!,
+  $filter: WebsiteEntityOfficeFilter
+  ) {
+  websiteOfficeByCode(
+    code: $code,
+    filter: $filter
+  )
+  {
+    id
+    type
+    city
+    active
+    isReception
+    isHangout
+    holidays {
+        dateBegin
+        dateEnd
+    }
+    shorterDays {
+        dateBegin
+        dateEnd
+        timeBegin
+        timeEnd
+    }
+    maxDimensions {
+      depth
+      height
+      width
+    }
+    metroStations {
+      name
+      line {
+        name
+        color
+      }
+    }
+    geoLatitude
+    geoLongitude
+    weight {
+        weightMin
+        weightMax
+    }
+    worktime
+    worktimes {
+        day
+        startTime
+        stopTime
+    }
+    code
+    address
+    dimensions {
+      depth
+      height
+      width
+    }
+    timezone
+ }
+}

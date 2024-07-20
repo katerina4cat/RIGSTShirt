@@ -1,7 +1,13 @@
 type Mutation {
     addProduct(product: NewProductInput!): Product
-    updateProductPrice(id: Int!, newPrice: Float!): Product
+    updateProduct(id: Int!, updatedFields: UpdateProductInput!): Product
     deleteProduct(id: Int!, recovery: Boolean): Boolean
+
+    addOrder(
+        cart: [CartOrderInput!]!
+        user: UserInfoInput!
+        delivery: DeliveryInput!
+    ): OrderInfo
 }
 type Query {
     getProducts(id: ID, showDeleted: Boolean): [Product]
@@ -10,4 +16,7 @@ type Query {
     register(login: String!, password: String!): Boolean
     login(login: String!, password: String!): Boolean
     logout: Boolean
+
+    orderSales(phone: String!): Float!
+    getOrders(filter: OrderFilterInput): [OrderInfo]!
 }
