@@ -2,13 +2,9 @@ import { ApiError } from "exceptions/errorService";
 import jwt from "jsonwebtoken";
 import DBManager from "database/DBManager";
 import { IContext } from "app";
+import { IPayload } from "models/Payload";
 
 type WithOptional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
-
-interface IPayload {
-    id: number;
-    created: Date;
-}
 
 class tokenService {
     public login = async (
@@ -31,7 +27,7 @@ class tokenService {
         payload: WithOptional<IPayload, "created">,
         context: IContext
     ) => {
-        payload.created = new Date();
+        payload = { id: payload.id, created: new Date() };
         if (!process.env.ACCESS_SECRET_KEY || !process.env.ACCESS_TIME)
             return "Не указаны данные в .env";
         const accessToken = jwt.sign(payload, process.env.ACCESS_SECRET_KEY, {

@@ -2,3 +2,4 @@ ssl/
 .pem
 .key
 node_modules/
+products/
