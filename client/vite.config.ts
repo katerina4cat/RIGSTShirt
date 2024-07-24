@@ -5,10 +5,10 @@ import path from "path";
 
 // https://vitejs.dev/config/
 export default defineConfig({
-    plugins: [react()],
+    plugins: [react({ tsDecorators: true })],
     server: {
         host: true,
-        port: 443,
+        port: 8443,
         https: {
             key: fs.readFileSync("./ssl/key.key"),
             cert: fs.readFileSync("./ssl/certificate.pem"),

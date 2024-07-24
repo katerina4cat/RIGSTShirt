@@ -1,28 +1,18 @@
-import { useEffect } from "react";
-import "./App.css";
+import { ViewModel, view } from "@yoskutik/react-vvm";
+import { makeObservable } from "mobx";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { roots } from "./router/routes";
 
-function App() {
-    const selectedPostal = (args: any) => {
-        console.log(args);
-    };
+interface Props {}
 
-    useEffect(() => {
-        window.ecomStartWidget({
-            id: 50317,
-            callbackFunction: selectedPostal,
-            containerId: "ecom-widget",
-        });
-    }, []);
-    return (
-        <>
-            <div style={{ width: "100vw", height: "100vh" }}>
-                <div
-                    id="ecom-widget"
-                    style={{ width: "65%", height: "50%" }}
-                ></div>
-            </div>
-        </>
-    );
+export class AppViewModel extends ViewModel<unknown, Props> {
+    constructor() {
+        super();
+        makeObservable(this);
+    }
 }
+const App = view(AppViewModel)<Props>(({ viewModel }) => {
+    return <RouterProvider router={createBrowserRouter(roots)} />;
+});
 
 export default App;

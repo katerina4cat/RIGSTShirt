@@ -24,7 +24,7 @@ const app = express();
 
 app.use(
     cors({
-        origin: "https://katerina4cat.ru:8443",
+        origin: "https://185.197.34.18:8443",
         credentials: true,
     })
 );
