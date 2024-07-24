@@ -1,0 +1,21 @@
+.Padder {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+    .Auth {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-evenly;
+        width: 60%;
+        & > * {
+            margin-top: 0.5em;
+        }
+        .ButtonTable {
+            margin-top: 1em;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+}

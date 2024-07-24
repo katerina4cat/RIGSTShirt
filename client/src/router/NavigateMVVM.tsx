@@ -1,4 +1,5 @@
-import { observable, action, makeObservable } from "mobx";
+import { observable, action, makeObservable, computed } from "mobx";
+import { Navigate } from "react-router-dom";
 
 export class NavigateMVVM {
     constructor() {
@@ -11,4 +12,8 @@ export class NavigateMVVM {
         this.path = to;
         console.log(this.path);
     };
+    @computed
+    get Navigator() {
+        return this.path ? <Navigate to={this.path} /> : undefined;
+    }
 }
