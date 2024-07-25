@@ -30,15 +30,18 @@ const Input = view(InputViewModel)<Props>(({ viewModel }) => {
         <div className={cl.InputBox}>
             <div className={cl.Input}>
                 <input
+                    {...viewModel.viewProps}
+                    placeholder=""
                     className={cl.Input}
-                    value={viewModel.viewProps.value}
-                    name={viewModel.viewProps.name}
-                    onChange={viewModel.viewProps.onChange}
                     onFocus={viewModel.focus}
                     onBlur={viewModel.blure}
                 />
                 <div
-                    className={cl.Placeholder}
+                    className={`${cl.Placeholder} ${
+                        !viewModel.viewProps.value && !viewModel.active
+                            ? cl.Preview
+                            : ""
+                    }`}
                     style={{
                         top:
                             viewModel.viewProps.value || viewModel.active
@@ -46,11 +49,11 @@ const Input = view(InputViewModel)<Props>(({ viewModel }) => {
                                 : "50%",
                         fontSize:
                             viewModel.viewProps.value || viewModel.active
-                                ? "1em"
+                                ? "0.95em"
                                 : "1.2em",
                         transform:
                             viewModel.viewProps.value || viewModel.active
-                                ? "translateY(-80%)"
+                                ? "translateY(-100%)"
                                 : "translateY(-50%)",
                     }}
                 >

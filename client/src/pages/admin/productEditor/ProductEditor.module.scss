@@ -1,0 +1,12 @@
+.ProductEditor {
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    flex-direction: column;
+    .Upload {
+        justify-content: center;
+        width: max-content;
+        max-width: 80%;
+        margin-bottom: 1.25em;
+    }
+}

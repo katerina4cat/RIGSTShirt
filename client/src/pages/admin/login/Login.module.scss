@@ -2,15 +2,14 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100%;
-    width: 100%;
     .Auth {
         display: flex;
         flex-direction: column;
         justify-content: space-evenly;
-        width: 60%;
+        width: 80%;
+        max-width: 500px;
         & > * {
-            margin-top: 0.5em;
+            margin-top: 0.75em;
         }
         .ButtonTable {
             margin-top: 1em;

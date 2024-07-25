@@ -2,7 +2,7 @@ import { ViewModel, view } from "@yoskutik/react-vvm";
 import { makeObservable } from "mobx";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { roots } from "./router/routes";
-import { ConfigProvider } from "antd";
+import { ConfigProvider, notification } from "antd";
 
 interface Props {}
 
@@ -12,7 +12,65 @@ export class AppViewModel extends ViewModel<unknown, Props> {
         makeObservable(this);
     }
 }
+
+export let createNotify = (
+    title: string,
+    message: string,
+    type: NotifyTypes = NotifyTypes.INFO,
+    duration: number = 2500
+) => {};
+export const enum NotifyTypes {
+    INFO,
+    WARNING,
+    ERROR,
+    SUCCESS,
+}
+
+const NotifyPlacement = "bottomLeft";
+
 const App = view(AppViewModel)<Props>(({ viewModel }) => {
+    const [api, contextHolder] = notification.useNotification();
+    createNotify = (
+        title: string,
+        message: string,
+        type: NotifyTypes = NotifyTypes.INFO,
+        duration: number = 2500
+    ) => {
+        switch (type) {
+            case NotifyTypes.INFO:
+                return api.info({
+                    message: title,
+                    description: message,
+                    placement: NotifyPlacement,
+                    showProgress: true,
+                    duration: duration,
+                });
+            case NotifyTypes.SUCCESS:
+                return api.success({
+                    message: title,
+                    description: message,
+                    placement: NotifyPlacement,
+                    showProgress: true,
+                    duration: duration,
+                });
+            case NotifyTypes.WARNING:
+                return api.warning({
+                    message: title,
+                    description: message,
+                    placement: NotifyPlacement,
+                    showProgress: true,
+                    duration: duration,
+                });
+            case NotifyTypes.ERROR:
+                return api.error({
+                    message: title,
+                    description: message,
+                    placement: NotifyPlacement,
+                    showProgress: true,
+                    duration: duration,
+                });
+        }
+    };
     return (
         <ConfigProvider
             theme={{
@@ -60,6 +118,7 @@ const App = view(AppViewModel)<Props>(({ viewModel }) => {
                 },
             }}
         >
+            {contextHolder}
             <RouterProvider router={createBrowserRouter(roots)} />
         </ConfigProvider>
     );

@@ -7,6 +7,11 @@
             left: 0;
             transition: all 0.15s ease-in-out;
             text-indent: 0.75em;
+            user-select: none;
+            pointer-events: none;
+        }
+        .Preview {
+            color: #9a949e;
         }
         .Input {
             outline: none;
@@ -18,6 +23,10 @@
             text-indent: 0.75em;
             font-size: 1.2em;
             color: #e6e2e9;
+            transition: border-color 0.15s ease-in-out;
+            &:focus {
+                border-color: #9a949e;
+            }
             &:-webkit-autofill,
             &:-webkit-autofill:focus,
             &:-internal-autofill-selected {

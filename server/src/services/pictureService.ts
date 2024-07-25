@@ -44,13 +44,13 @@ export const pictureService = {
                     `${mediaPath}/products/${product}/${fileName}.${ext}`,
                     req.body
                 );
+                res.status(200).send(`${fileName}.${ext}`);
             } catch (err) {
                 console.log(err);
                 throw ApiError.RuntimeError(
                     "Не удалось загрузить фото на сервер!"
                 );
             }
-            res.status(200).send(true);
         } catch (err) {
             next(err);
         }
