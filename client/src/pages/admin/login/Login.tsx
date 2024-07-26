@@ -4,12 +4,10 @@ import { action, makeObservable, observable } from "mobx";
 import { NavigateMVVM } from "../../../router/NavigateMVVM";
 import { Button } from "antd";
 import cl from "./Login.module.scss";
-import ptemp from "../../../modules/Header/PageTemplate.module.scss";
 import Input from "../../../modules/Input/Input";
-import Header from "../../../modules/Header/Header";
-import Footer from "../../../modules/Footer/Footer";
 import { createNotify, NotifyTypes } from "../../../App";
-import axios from "axios";
+import { APILogin } from "../../../common/ApiManager/ApiManager";
+import BaseTemplate from "../../../modules/PageTemplate/BaseTemplate";
 
 interface Props {}
 
@@ -31,27 +29,48 @@ export class LoginViewModel extends ViewModel<unknown, Props> {
     };
     @action
     tryLogin = async () => {
-        if (this.inputData.login)
+        if (!this.inputData.login)
             return createNotify(
                 "Авторизация",
                 "Вы не указали свой логин!",
                 NotifyTypes.ERROR
             );
-        if (this.inputData.password)
+        if (!this.inputData.password)
             return createNotify(
                 "Авторизация",
                 "Вы не указали пароль!",
                 NotifyTypes.ERROR
             );
-        axios.post();
-        createNotify("Авторизация", "Тест", NotifyTypes.SUCCESS);
+        const res = await APILogin(
+            this.inputData.login,
+            this.inputData.password
+        );
+        if ("errors" in res) {
+            res.errors.map((errorInfo: { message: string }) =>
+                createNotify(
+                    "Авторизация",
+                    errorInfo.message,
+                    NotifyTypes.ERROR,
+                    2
+                )
+            );
+            return;
+        }
+        if (res.data?.login) {
+            this.nav.navigate("/admin/menu");
+            createNotify(
+                "Авторизация",
+                "Вы успешно авторизовались",
+                NotifyTypes.SUCCESS,
+                1.5
+            );
+        }
     };
 }
 
 const Login = view(LoginViewModel)<Props>(({ viewModel }) => {
     return (
-        <div className={ptemp.wrapper}>
-            <Header />
+        <BaseTemplate>
             <div className={cl.Padder}>
                 <div className={cl.Auth}>
                     <h2>Авторизация</h2>
@@ -75,8 +94,7 @@ const Login = view(LoginViewModel)<Props>(({ viewModel }) => {
                 </div>
                 {viewModel.nav.Navigator}
             </div>
-            <Footer />
-        </div>
+        </BaseTemplate>
     );
 });
 

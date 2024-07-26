@@ -1,15 +1,13 @@
 import { ViewModel, view } from "@yoskutik/react-vvm";
 import { action, makeObservable, observable } from "mobx";
 import cl from "./ProductEditor.module.scss";
-import Footer from "../../../modules/Footer/Footer";
-import Header from "../../../modules/Header/Header";
-import ptemp from "../../../modules/Header/PageTemplate.module.scss";
 import { GetProp, Image, Upload, UploadFile, UploadProps } from "antd";
-import { NavigateMVVM } from "../../../router/NavigateMVVM";
 import axios from "axios";
 import Input from "../../../modules/Input/Input";
-import { ChangeEvent } from "react";
-import { checkLogin } from "../../../router/authCheck";
+import { APIAccessTest } from "../../../common/ApiManager/ApiManager";
+import BaseTemplate from "../../../modules/PageTemplate/BaseTemplate";
+import Loading from "../../../modules/PageTemplate/Loading";
+import { createNotify, NotifyTypes } from "../../../App";
 
 interface Props {}
 
@@ -24,10 +22,11 @@ const getBase64 = (file: FileType): Promise<string> =>
     });
 
 export class ProductEditorViewModel extends ViewModel<unknown, Props> {
-    nav = new NavigateMVVM();
+    nav = { navigate: (to: string) => {} };
     constructor() {
         super();
         makeObservable(this);
+        this.authCheck();
         this.loadImages(1);
     }
     productID = 1;
@@ -133,52 +132,62 @@ export class ProductEditorViewModel extends ViewModel<unknown, Props> {
     handleInput = (event: React.ChangeEvent<HTMLInputElement>) => {
         this.inputData[event.target.name] = event.target.value;
     };
+
+    protected async authCheck() {
+        if (!(await APIAccessTest())) {
+            this.nav.navigate("/admin/login");
+            createNotify(
+                "Авторизация",
+                "Для открытия данной страницы необходима авторизация!",
+                NotifyTypes.ERROR,
+                3
+            );
+        }
+        this.loading = false;
+    }
+    @observable
+    loading = true;
 }
 const ProductEditor = view(ProductEditorViewModel)<Props>(({ viewModel }) => {
-    if (!checkLogin()) {
-        viewModel.nav.navigate("/admin/login");
-        return viewModel.nav.Navigator;
-    }
     const uploadButton = (
         <button style={{ border: 0, background: "none" }} type="button">
             +<div style={{ marginTop: 8 }}>Upload</div>
         </button>
     );
     return (
-        <div className={ptemp.wrapper}>
-            <Header backUrl="/admin/menu" logout />
-            <div className={cl.ProductEditor}>
-                <h1>Добавление/редактирование товара</h1>
-                <Upload
-                    listType="picture-card"
-                    className={cl.Upload}
-                    fileList={viewModel.fileList}
-                    onPreview={viewModel.setPreviewFile}
-                    onChange={viewModel.handleChange}
-                >
-                    {viewModel.fileList.length >= 8 ? null : uploadButton}
-                </Upload>
-                {viewModel.previewImage && (
-                    <Image
-                        wrapperStyle={{ display: "none" }}
-                        preview={{
-                            visible: viewModel.previewOpen,
-                            onVisibleChange: (visible) =>
-                                viewModel.setPreview(visible),
-                        }}
-                        src={viewModel.previewImage}
+        <BaseTemplate backUrl="/admin/menu" logout nav={viewModel.nav}>
+            <Loading loading={viewModel.loading}>
+                <div className={cl.ProductEditor}>
+                    <h1>Добавление/редактирование товара</h1>
+                    <Upload
+                        listType="picture-card"
+                        className={cl.Upload}
+                        fileList={viewModel.fileList}
+                        onPreview={viewModel.setPreviewFile}
+                        onChange={viewModel.handleChange}
+                    >
+                        {viewModel.fileList.length >= 8 ? null : uploadButton}
+                    </Upload>
+                    {viewModel.previewImage && (
+                        <Image
+                            wrapperStyle={{ display: "none" }}
+                            preview={{
+                                visible: viewModel.previewOpen,
+                                onVisibleChange: (visible) =>
+                                    viewModel.setPreview(visible),
+                            }}
+                            src={viewModel.previewImage}
+                        />
+                    )}
+                    <Input
+                        value={viewModel.inputData.title}
+                        name={"title"}
+                        onChange={viewModel.handleInput}
+                        placeholder="Название"
                     />
-                )}
-                <Input
-                    value={viewModel.inputData.title}
-                    name={"title"}
-                    onChange={viewModel.handleInput}
-                    placeholder="Название"
-                />
-                {viewModel.nav.Navigator}
-            </div>
-            <Footer />
-        </div>
+                </div>
+            </Loading>
+        </BaseTemplate>
     );
 });
 

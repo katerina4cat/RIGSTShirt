@@ -16,6 +16,7 @@ type Query {
     register(login: String!, password: String!): Boolean
     login(login: String!, password: String!): Boolean
     logout: Boolean
+    hasAccess: Boolean
 
     orderSales(phone: String!): Float!
     getOrders(filter: OrderFilterInput): [OrderInfo]!

@@ -14,6 +14,15 @@ export default defineConfig({
             key: fs.readFileSync("./ssl/key.key"),
             cert: fs.readFileSync("./ssl/certificate.pem"),
         },
+        proxy: {
+            "/api": {
+                target: "https://185.197.34.18",
+                changeOrigin: true,
+                secure: false,
+                ws: true,
+                rewrite: (path) => path.replace("/api", ""),
+            },
+        },
     },
     resolve: {
         alias: {

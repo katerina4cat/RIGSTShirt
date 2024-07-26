@@ -17,7 +17,7 @@ export let createNotify = (
     title: string,
     message: string,
     type: NotifyTypes = NotifyTypes.INFO,
-    duration: number = 2500
+    duration: number = 2.5
 ) => {};
 export const enum NotifyTypes {
     INFO,
@@ -34,7 +34,7 @@ const App = view(AppViewModel)<Props>(({ viewModel }) => {
         title: string,
         message: string,
         type: NotifyTypes = NotifyTypes.INFO,
-        duration: number = 2500
+        duration: number = 2.5
     ) => {
         switch (type) {
             case NotifyTypes.INFO:

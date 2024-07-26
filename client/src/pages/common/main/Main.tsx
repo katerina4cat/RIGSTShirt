@@ -1,9 +1,7 @@
 import { ViewModel, view } from "@yoskutik/react-vvm";
 import { makeObservable } from "mobx";
 import { NavigateMVVM } from "../../../router/NavigateMVVM";
-import ptemp from "../../../modules/Header/PageTemplate.module.scss";
-import Header from "../../../modules/Header/Header";
-import Footer from "../../../modules/Footer/Footer";
+import BaseTemplate from "../../../modules/PageTemplate/BaseTemplate";
 
 interface Props {}
 
@@ -16,8 +14,7 @@ export class MainViewModel extends ViewModel<unknown, Props> {
 }
 const Main = view(MainViewModel)<Props>(({ viewModel }) => {
     return (
-        <div className={ptemp.wrapper}>
-            <Header />
+        <BaseTemplate>
             <div>
                 {viewModel.nav.Navigator}
                 <img
@@ -48,8 +45,7 @@ const Main = view(MainViewModel)<Props>(({ viewModel }) => {
                     alt=""
                 />
             </div>
-            <Footer />
-        </div>
+        </BaseTemplate>
     );
 });
 

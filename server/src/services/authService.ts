@@ -14,6 +14,10 @@ export const authServices = {
         context.res.clearCookie("access");
         return true;
     },
+    hasAccess: async (_: any, context: IContext) => {
+        const res = await tokenService.validateAcessToken(context);
+        return !(res instanceof ApiError);
+    },
     register: async (
         {
             login,
