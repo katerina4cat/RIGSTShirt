@@ -86,25 +86,19 @@ const App = view(AppViewModel)<Props>(({ viewModel }) => {
                         colorBgElevated: "rgb(64, 51, 77)",
                         colorBorder: "rgb(68, 68, 68)",
                         optionSelectedBg: "rgb(82, 57, 106)",
+                        colorPrimary: "rgba(154, 148, 158, 0)",
+                        controlOutline: "rgb(154, 148, 158)",
+                        colorPrimaryHover: "rgb(154, 148, 158)",
                     },
                     Switch: {
                         colorPrimary: "rgb(108, 61, 150)",
+                        colorPrimaryHover: "rgba(108, 61, 150, 0.6)",
                     },
                     Table: {
                         colorLink: "rgb(127, 96, 171)",
                         colorLinkActive: "rgb(127, 96, 171)",
                         colorLinkHover: "rgb(170, 135, 220)",
                         colorPrimary: "rgb(127, 96, 171)",
-                    },
-                    Input: {
-                        activeBg: "rgb(68, 40, 94)",
-                        activeBorderColor: "rgba(22, 119, 255, 0)",
-                        addonBg: "rgba(0, 0, 0, 0)",
-                        hoverBorderColor: "rgb(104, 95, 112)",
-                        colorBorder: "rgb(68, 68, 68)",
-                        colorBgContainer: "rgba(64, 51, 77, 0.75)",
-                        colorText: "rgb(230, 226, 233)",
-                        colorTextPlaceholder: "rgba(230, 226, 233, 0.25)",
                     },
                     Button: {
                         defaultBg: "rgb(54, 40, 67)",
@@ -114,6 +108,10 @@ const App = view(AppViewModel)<Props>(({ viewModel }) => {
                         defaultHoverBorderColor: "rgb(87, 47, 124)",
                         defaultHoverBg: "rgb(87, 47, 124)",
                         defaultHoverColor: "rgb(230, 226, 233)",
+                    },
+                    Upload: {
+                        colorBorder: "rgb(119, 58, 175)",
+                        colorFillAlter: "rgba(54, 40, 67, 0.71)",
                     },
                 },
             }}

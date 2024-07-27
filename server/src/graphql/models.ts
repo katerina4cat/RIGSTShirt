@@ -12,6 +12,8 @@ export interface UpdateProductInput {
     description?: string;
     price?: number;
     sizes?: number[];
+    deleted?: boolean;
+    showSale?: boolean;
 }
 
 export interface CartOrderInput {

@@ -1,139 +1,63 @@
 import { ViewModel, view } from "@yoskutik/react-vvm";
 import { action, makeObservable, observable } from "mobx";
 import cl from "./ProductEditor.module.scss";
-import { GetProp, Image, Upload, UploadFile, UploadProps } from "antd";
-import axios from "axios";
+import { Button, Select, Switch } from "antd";
 import Input from "../../../modules/Input/Input";
-import { APIAccessTest } from "../../../common/ApiManager/ApiManager";
+import {
+    APIAccessTest,
+    APICreateNewProduct,
+    APIEditProduct,
+    APIGetProductInfo,
+    APIGetSizes,
+    IProductInfo,
+} from "../../../common/ApiManager/ApiManager";
 import BaseTemplate from "../../../modules/PageTemplate/BaseTemplate";
 import Loading from "../../../modules/PageTemplate/Loading";
 import { createNotify, NotifyTypes } from "../../../App";
+import Uploader from "../../../modules/Uploader/Uploader";
+import { useParams } from "react-router-dom";
+import InputArea from "../../../modules/InputArea/InputArea";
 
 interface Props {}
 
-type FileType = Parameters<GetProp<UploadProps, "beforeUpload">>[0];
-
-const getBase64 = (file: FileType): Promise<string> =>
-    new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = (error) => reject(error);
-    });
+type InputsNames = "title" | "description" | "price";
 
 export class ProductEditorViewModel extends ViewModel<unknown, Props> {
     nav = { navigate: (to: string) => {} };
     constructor() {
         super();
         makeObservable(this);
-        this.authCheck();
-        this.loadImages(1);
+        const { id } = useParams();
+        if (id !== undefined && /^\d+$/.test(id)) this.productID = Number(id);
+        this.loadServerData();
+        this.loadSizes();
     }
-    productID = 1;
+    productID?: number;
     @observable
-    previewImage = "";
-    @observable
-    previewOpen = false;
-    @action
-    setPreview = (value: boolean) => {
-        if (!value) this.previewImage = "";
-        this.previewOpen = value;
+    inputData: { [key in InputsNames]: string } = {
+        title: "",
+        description: "",
+        price: "0",
     };
-    @action
-    setPreviewFile = async (file: UploadFile) => {
-        if (!file.url && !file.preview) {
-            file.preview = await getBase64(file.originFileObj as FileType);
-        }
+    @observable
+    prevPrice = -1;
+    @observable
+    showSale = false;
+    @observable
+    deleted = true;
 
-        this.previewImage = file.url || (file.preview as string);
-        this.previewOpen = true;
-    };
-    @action
-    loadImages = async (productID: number) => {
-        const photos: string[] =
-            (
-                await axios.get(
-                    "https://185.197.34.18/product/list/?p=" + productID
-                )
-            ).data || [];
-        photos.forEach((photo) =>
-            this.fileList.push({
-                uid: photo,
-                name: photo,
-                status: "done",
-                url:
-                    "https://185.197.34.18/product/picture?p=" +
-                    productID +
-                    "&img=" +
-                    photo,
-            })
-        );
-    };
-    @action
-    handleChange: UploadProps["onChange"] = async ({
-        fileList: newFileList,
-    }) => {
-        const deletedFile = this.fileList.find(
-            (file) =>
-                newFileList.findIndex((newFile) => newFile.uid === file.uid) ===
-                -1
-        );
-        const newFile = newFileList.find(
-            (newFile) =>
-                this.fileList.findIndex((file) => newFile.uid === file.uid) ===
-                -1
-        );
-        if (newFile !== undefined) {
-            this.fileList.push(newFile);
-            axios
-                .post(
-                    "https://185.197.34.18/product/picture?p=" + this.productID,
-                    await newFile.originFileObj?.arrayBuffer()
-                )
-                .then((res) => {
-                    if (res.status === 200) {
-                        const file = this.fileList.find(
-                            (file) => file.uid == newFile.uid
-                        );
-                        if (!file) return;
-                        file.status = "done";
-                        file.name = res.data;
-                        file.url =
-                            "https://185.197.34.18/product/picture?p=" +
-                            this.productID +
-                            "&img=" +
-                            res.data;
-                    }
-                });
-            return;
-        }
-        if (deletedFile !== undefined) {
-            axios
-                .delete(
-                    "https://185.197.34.18/product/picture?p=" +
-                        this.productID +
-                        "&img=" +
-                        deletedFile.name
-                )
-                .then((res) => {
-                    if (res.status === 200)
-                        this.fileList = this.fileList.filter(
-                            (file) => file.uid !== deletedFile.uid
-                        );
-                });
-            return;
-        }
-    };
-    @observable
-    fileList: UploadFile<any>[] = [];
-    @observable
-    inputData: { [key in string]: string } = { title: "" };
-    @observable
-    handleInput = (event: React.ChangeEvent<HTMLInputElement>) => {
-        this.inputData[event.target.name] = event.target.value;
-    };
+    loadedData?: IProductInfo;
 
-    protected async authCheck() {
+    @action
+    handleInput = (
+        event:
+            | React.ChangeEvent<HTMLInputElement>
+            | React.ChangeEvent<HTMLTextAreaElement>
+    ) => {
+        this.inputData[event.target.name as InputsNames] = event.target.value;
+    };
+    @action
+    loadServerData = async () => {
         if (!(await APIAccessTest())) {
             this.nav.navigate("/admin/login");
             createNotify(
@@ -142,49 +66,263 @@ export class ProductEditorViewModel extends ViewModel<unknown, Props> {
                 NotifyTypes.ERROR,
                 3
             );
+            return;
         }
-        this.loading = false;
-    }
+        if (this.productID === undefined) {
+            const res = await APICreateNewProduct();
+            if (res.errors !== undefined) {
+                createNotify(
+                    "Редактор товара",
+                    "Не удалось открыть редактор!",
+                    NotifyTypes.ERROR,
+                    3
+                );
+                res.errors.forEach((errorInfo: { message: string }) =>
+                    createNotify(
+                        "Редактор товара",
+                        errorInfo.message,
+                        NotifyTypes.ERROR,
+                        3
+                    )
+                );
+                setTimeout(() => {
+                    this.nav.navigate("/admin/menu");
+                }, 2500);
+                return;
+            }
+            if (typeof res !== "number") {
+                createNotify(
+                    "Редактор товара",
+                    "Не удалось открыть редактор!",
+                    NotifyTypes.ERROR,
+                    3
+                );
+                setTimeout(() => {
+                    this.nav.navigate("/admin/menu");
+                }, 2500);
+                return;
+            }
+            this.nav.navigate("/admin/edit/" + res);
+            this.productID = res;
+        }
+        const res = await APIGetProductInfo(this.productID);
+        if (res.errors !== undefined) {
+            createNotify(
+                "Редактор товара",
+                "Не удалось открыть редактор!",
+                NotifyTypes.ERROR,
+                3
+            );
+            res.errors.forEach((errorInfo: { message: string }) =>
+                createNotify(
+                    "Редактор товара",
+                    errorInfo.message,
+                    NotifyTypes.ERROR,
+                    3
+                )
+            );
+            setTimeout(() => {
+                this.nav.navigate("/admin/menu");
+            }, 2500);
+            return;
+        }
+        action(() => {
+            this.loadedData = res;
+            this.inputData.title = res.title;
+            this.inputData.description = res.description;
+            this.inputData.price = res.price.toString();
+            this.deleted = res.deleted;
+            this.showSale = res.showSale;
+            this.prevPrice = res.previousPrice;
+            this.selectedSizes = res.sizes.map(
+                (size: { id: number }) => size.id
+            );
+
+            this.loading = false;
+        })();
+    };
+
+    tryLoadSize = 0;
+
+    @action
+    loadSizes = async () => {
+        const res = await APIGetSizes();
+        if (res.errors !== undefined) {
+            createNotify(
+                "Редактор товара",
+                `Не удалось загрузить список размеров!
+                ${this.tryLoadSize + 1} попытка`,
+                NotifyTypes.ERROR,
+                1.5
+            );
+            if (this.tryLoadSize >= 3) {
+                this.tryLoadSize++;
+                setTimeout(() => {
+                    this.loadSizes();
+                }, 1000);
+            }
+            return;
+        }
+        this.sizes = res.map((sizeInfo: { id: number; title: string }) => ({
+            label: sizeInfo.title,
+            value: sizeInfo.id + "|" + sizeInfo.title,
+        }));
+    };
+
+    handleSelected = (values: string[]) => {
+        this.selectedSizes = values.map((value) => Number(value.split("|")[0]));
+    };
+
+    saveChanges = () => {
+        let dataToSave: Partial<IProductInfo> = {};
+
+        if (this.loadedData?.title !== this.inputData.title)
+            dataToSave.title = this.inputData.title;
+
+        if (this.loadedData?.description !== this.inputData.description)
+            dataToSave.description = this.inputData.description;
+
+        if (this.loadedData?.deleted !== this.deleted)
+            dataToSave.deleted = this.deleted;
+
+        if (this.loadedData?.showSale !== this.showSale)
+            dataToSave.showSale = this.showSale;
+
+        if (this.loadedData?.price != Number(this.inputData.price))
+            dataToSave.price = Number(this.inputData.price);
+
+        if (
+            this.loadedData!.sizes.length != this.selectedSizes.length ||
+            this.loadedData!.sizes.filter(
+                (size, i) => size.id != this.selectedSizes[i]
+            ).length > 0
+        )
+            dataToSave.sizes = this.selectedSizes.map((size) => ({ id: size }));
+
+        if (Object.values(dataToSave).filter((x) => x !== undefined).length > 0)
+            APIEditProduct(this.productID!, dataToSave).then((res) => {
+                if (res.errors !== undefined) {
+                    res.errors.forEach((errorInfo: { message: string }) =>
+                        createNotify(
+                            "Редактор товара",
+                            errorInfo.message,
+                            NotifyTypes.ERROR,
+                            3
+                        )
+                    );
+                    return;
+                }
+                this.loadedData = res;
+                createNotify(
+                    "Редактор товара",
+                    `Новые данные товара №${res.id} успешно сохранены`,
+                    NotifyTypes.SUCCESS,
+                    2
+                );
+            });
+        else
+            createNotify(
+                "Редактор товара",
+                "Вы не внесли никакие изменения!",
+                NotifyTypes.WARNING,
+                1.75
+            );
+    };
+
     @observable
     loading = true;
+    @observable
+    selectedSizes: number[] = [];
+    @observable
+    sizes: { label: string; value: string }[] = [];
 }
 const ProductEditor = view(ProductEditorViewModel)<Props>(({ viewModel }) => {
-    const uploadButton = (
-        <button style={{ border: 0, background: "none" }} type="button">
-            +<div style={{ marginTop: 8 }}>Upload</div>
-        </button>
-    );
     return (
         <BaseTemplate backUrl="/admin/menu" logout nav={viewModel.nav}>
             <Loading loading={viewModel.loading}>
                 <div className={cl.ProductEditor}>
-                    <h1>Добавление/редактирование товара</h1>
-                    <Upload
-                        listType="picture-card"
-                        className={cl.Upload}
-                        fileList={viewModel.fileList}
-                        onPreview={viewModel.setPreviewFile}
-                        onChange={viewModel.handleChange}
-                    >
-                        {viewModel.fileList.length >= 8 ? null : uploadButton}
-                    </Upload>
-                    {viewModel.previewImage && (
-                        <Image
-                            wrapperStyle={{ display: "none" }}
-                            preview={{
-                                visible: viewModel.previewOpen,
-                                onVisibleChange: (visible) =>
-                                    viewModel.setPreview(visible),
-                            }}
-                            src={viewModel.previewImage}
+                    <div className={cl.EditorBox}>
+                        <h3>Добавление/редактирование товара</h3>
+                        <Uploader productID={viewModel.productID!} />
+                        <br />
+                        <Input
+                            value={viewModel.inputData.title}
+                            name={"title"}
+                            onChange={viewModel.handleInput}
+                            placeholder="Название"
                         />
-                    )}
-                    <Input
-                        value={viewModel.inputData.title}
-                        name={"title"}
-                        onChange={viewModel.handleInput}
-                        placeholder="Название"
-                    />
+                        <InputArea
+                            value={viewModel.inputData.description}
+                            name={"description"}
+                            onChange={viewModel.handleInput}
+                            placeholder="Описание"
+                            style={{
+                                height: "35vh",
+                                width: "80vw",
+                                resize: "none",
+                            }}
+                        />
+                        <Select
+                            placeholder="Размер"
+                            mode="multiple"
+                            options={viewModel.sizes}
+                            value={
+                                viewModel.selectedSizes
+                                    .map(
+                                        (select) =>
+                                            viewModel.sizes.find((element) =>
+                                                element.value.startsWith(
+                                                    select + "|"
+                                                )
+                                            )?.value
+                                    )
+                                    .filter(Boolean) as string[]
+                            }
+                            className={cl.Select}
+                            onChange={viewModel.handleSelected}
+                        />
+                        <br />
+                        <br />
+                        <div className={cl.PrevPriceBox}>
+                            Предыдущая цена:
+                            <div className={cl.PrevPrice}>
+                                {viewModel.prevPrice > 0
+                                    ? viewModel.prevPrice
+                                    : "-"}
+                            </div>
+                        </div>
+                        <Input
+                            type="number"
+                            value={viewModel.inputData.price}
+                            name={"price"}
+                            onChange={viewModel.handleInput}
+                            placeholder="Цена"
+                        />
+                        <div className={cl.SwitchBox}>
+                            Показать скидку:
+                            <Switch
+                                value={viewModel.showSale}
+                                onChange={action((checked) => {
+                                    viewModel.showSale = checked;
+                                })}
+                                className={cl.Switch}
+                            />
+                            <div />
+                            Скрыть товар:
+                            <Switch
+                                value={viewModel.deleted}
+                                onChange={action((checked) => {
+                                    viewModel.deleted = checked;
+                                })}
+                                className={cl.Switch}
+                            />
+                        </div>
+                        <div className={cl.SaveBox}>
+                            <Button onClick={viewModel.saveChanges}>
+                                Сохранить
+                            </Button>
+                        </div>
+                    </div>
                 </div>
             </Loading>
         </BaseTemplate>

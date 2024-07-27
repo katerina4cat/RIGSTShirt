@@ -1,29 +1,29 @@
 import { ViewModel, view } from "@yoskutik/react-vvm";
 import { action, makeObservable, observable } from "mobx";
-import cl from "./Input.module.scss";
+import cl from "./InputArea.module.scss";
 import React from "react";
 
-interface Props extends React.InputHTMLAttributes<HTMLInputElement> {
+interface Props extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
     value: string;
     name: string;
-    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
 }
 
-export class InputViewModel extends ViewModel<unknown, Props> {
+export class InputAreaViewModel extends ViewModel<unknown, Props> {
     constructor() {
         super();
         makeObservable(this);
         this.value = this.viewProps.value;
     }
-    @observable
-    active = false;
     @action
-    onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         this.value = e.target.value;
         this.viewProps.onChange(e);
     };
     @observable
     value: string;
+    @observable
+    active = false;
     @action
     focus = () => {
         this.active = true;
@@ -33,14 +33,14 @@ export class InputViewModel extends ViewModel<unknown, Props> {
         this.active = false;
     };
 }
-const Input = view(InputViewModel)<Props>(({ viewModel }) => {
+const InputArea = view(InputAreaViewModel)<Props>(({ viewModel }) => {
     return (
-        <div className={cl.InputBox}>
-            <div className={cl.Input}>
-                <input
+        <div className={cl.InputAreaBox}>
+            <div className={cl.InputArea}>
+                <textarea
                     {...viewModel.viewProps}
                     placeholder=""
-                    className={cl.Input}
+                    className={cl.InputArea}
                     value={viewModel.value}
                     onFocus={viewModel.focus}
                     onBlur={viewModel.blure}
@@ -70,4 +70,4 @@ const Input = view(InputViewModel)<Props>(({ viewModel }) => {
     );
 });
 
-export default Input;
+export default InputArea;

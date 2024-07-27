@@ -14,7 +14,7 @@ export const productEditorServices = {
         const payload = await tokenService.validateAcessToken(context);
         if (payload instanceof ApiError) return payload;
         await DBManager.query(
-            `INSERT INTO product(title, description, deleted, showSale) VALUES("${product.title}", "${product.description}", false, false);`
+            `INSERT INTO product(title, description, deleted, showSale) VALUES("${product.title}", "${product.description}", true, false);`
         );
         const createdProduct = (
             await DBManager.query<IProduct>(
@@ -31,7 +31,9 @@ export const productEditorServices = {
                 .join(",")};`
         );
         DBManager.connection.commit();
-        return (await root.getProducts({ id: createdProduct.id }))[0];
+        return (
+            await root.getProducts({ id: createdProduct.id, showDeleted: true })
+        )[0];
     },
     updateProduct: async (
         {
@@ -50,12 +52,21 @@ export const productEditorServices = {
             await DBManager.query(
                 `INSERT INTO priceHistory(id, workerID, price) VALUES(${id}, ${payload.id}, "${updatedFields.price}");`
             );
-        if (updatedFields.title || updatedFields.description)
+        if (
+            updatedFields.title ||
+            updatedFields.description ||
+            updatedFields.showSale !== undefined ||
+            updatedFields.deleted !== undefined
+        )
             await DBManager.query(
                 `UPDATE product SET ${[
                     updatedFields.title && `title="${updatedFields.title}"`,
                     updatedFields.description &&
                         `description="${updatedFields.description}"`,
+                    updatedFields.showSale !== undefined &&
+                        `showSale=${updatedFields.showSale}`,
+                    updatedFields.deleted !== undefined &&
+                        `deleted=${updatedFields.deleted}`,
                 ]
                     .filter(Boolean)
                     .join(",")} WHERE id=${id};`
@@ -71,7 +82,7 @@ export const productEditorServices = {
             );
         }
         DBManager.connection.commit();
-        return (await root.getProducts({ id: id }))[0];
+        return (await root.getProducts({ id: id, showDeleted: true }))[0];
     },
     deleteProduct: async (
         {

@@ -17,7 +17,7 @@ export const roots: RouteObject[] = [
                 element: <Menu />,
             },
             {
-                path: "edit",
+                path: "edit/:id?",
                 element: <ProductEditor />,
             },
         ],

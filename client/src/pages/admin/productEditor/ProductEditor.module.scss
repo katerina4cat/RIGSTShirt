@@ -1,12 +1,38 @@
 .ProductEditor {
     display: flex;
-    justify-content: start;
-    align-items: center;
-    flex-direction: column;
-    .Upload {
-        justify-content: center;
-        width: max-content;
-        max-width: 80%;
-        margin-bottom: 1.25em;
+    justify-content: center;
+    .EditorBox {
+        display: flex;
+        justify-content: start;
+        flex-direction: column;
+        width: 80%;
+        & > * {
+            margin-top: 1em;
+        }
+        .Select {
+            text-align: start;
+        }
+        .PrevPriceBox {
+            display: flex;
+            padding: 0.5em 0;
+            .PrevPrice {
+                color: #ef4a5b;
+                margin-left: 0.75em;
+            }
+        }
+        .SwitchBox {
+            width: 80%;
+            display: grid;
+            grid-template-columns: auto auto 1fr;
+            align-items: center;
+            text-align: start;
+            .Switch {
+                margin: 0.75em 0 0.75em 1em;
+            }
+        }
+        .SaveBox {
+            display: flex;
+            justify-content: end;
+        }
     }
 }

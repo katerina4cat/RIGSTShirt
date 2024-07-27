@@ -4,6 +4,8 @@ type Product {
     description: String!
     price: Float!
     previousPrice: Float
+    showSale: Boolean!
+    deleted: Boolean!
     sizes: [Size]!
 }
 

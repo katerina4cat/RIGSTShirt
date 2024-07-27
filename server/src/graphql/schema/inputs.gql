@@ -10,6 +10,8 @@ input UpdateProductInput {
     description: String
     price: Float
     sizes: [Int!]
+    deleted: Boolean
+    showSale: Boolean
 }
 
 input CartOrderInput {
