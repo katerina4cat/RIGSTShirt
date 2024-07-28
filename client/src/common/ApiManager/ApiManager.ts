@@ -98,6 +98,45 @@ export const APIGetProductInfo = async (id: number) => {
     }
 };
 
+interface ProductsInfoApiResult {
+    data?: {
+        getProducts: IProductInfo[];
+    };
+    errors?: { message: string }[];
+}
+export const APIGetProductsInfo = async (): Promise<ProductsInfoApiResult> => {
+    try {
+        const res = await axios.post(baseURL + "/graphql", {
+            query: `
+{
+  getProducts{
+    id
+    title
+    description
+    price
+    showSale
+    previousPrice
+  }
+}`,
+        });
+        if (res.data.errors !== undefined) throw 1;
+        return res.data as ProductsInfoApiResult;
+    } catch (err) {
+        return { errors: [{ message: "Не удалось подключиться к серверу" }] };
+    }
+};
+
+export const APIGetProductPictureUrls = async (id: number) => {
+    try {
+        const res = await axios.get(baseURL + "/product/list/?p=" + id);
+        return (res.data as string[]).map(
+            (fileName) => `/product/picture/?p=${id}&img=${fileName}`
+        );
+    } catch (err) {
+        return { errors: [{ message: "Не удалось подключиться к серверу" }] };
+    }
+};
+
 export const APIGetSizes = async () => {
     try {
         const res = await axios.post(baseURL + "/graphql", {

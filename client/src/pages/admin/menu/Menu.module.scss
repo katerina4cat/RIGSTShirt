@@ -9,10 +9,10 @@
         max-width: 80%;
         justify-content: space-between;
         .FunctionButton {
-            width: 8em;
-            height: 8em;
+            width: 7em;
+            height: 7em;
             margin: 1.5em;
-            text-wrap: wrap;
+            white-space: normal;
         }
     }
 }

@@ -1,0 +1,55 @@
+.ProductElement {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0.75em;
+    margin-bottom: 1.25em;
+    width: 150px;
+    aspect-ratio: 3/1.75;
+    @media (min-width: 600px) {
+        width: 283px;
+        aspect-ratio: 3/1.35;
+    }
+    cursor: pointer;
+    .PreviewImage {
+        width: 100%;
+        aspect-ratio: 1;
+        object-fit: cover;
+        border-radius: 16px 16px 0 0;
+        background-color: #362843;
+    }
+    .Info {
+        background-color: #ded7e4a0;
+        width: 100%;
+        height: 100%;
+        border-radius: 0 0 16px 16px;
+        padding-top: 0.5em;
+        display: flex;
+        flex-direction: column;
+        .Title {
+            white-space: normal;
+            font-size: 0.75em;
+            @media (min-width: 600px) {
+                font-size: 0.95em;
+            }
+
+            padding: 0.2em 0.25em;
+            font-weight: bold;
+            flex-grow: 1;
+            color: #262428;
+        }
+        .Prices {
+            display: flex;
+            padding: 1em;
+            font-weight: bold;
+            .Current {
+                color: #d32326;
+            }
+            .Previous {
+                color: #362843a0;
+                font-size: 0.9em;
+                padding-left: 0.5em;
+            }
+        }
+    }
+}

@@ -1,5 +1,5 @@
 import { ViewModel, view } from "@yoskutik/react-vvm";
-import { makeObservable, observable } from "mobx";
+import { action, makeObservable, observable } from "mobx";
 import cl from "./Menu.module.scss";
 import { Button } from "antd";
 import { APIAccessTest } from "../../../common/ApiManager/ApiManager";
@@ -14,10 +14,12 @@ export class MenuViewModel extends ViewModel<unknown, Props> {
 
     constructor() {
         super();
-        makeObservable(this);
         this.authCheck();
+        makeObservable(this);
     }
-    protected async authCheck() {
+
+    @action
+    authCheck = async () => {
         if (!(await APIAccessTest())) {
             this.nav.navigate("/admin/login");
             createNotify(
@@ -28,7 +30,7 @@ export class MenuViewModel extends ViewModel<unknown, Props> {
             );
         }
         this.loading = false;
-    }
+    };
     @observable
     loading = true;
 }

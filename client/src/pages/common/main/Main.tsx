@@ -1,7 +1,14 @@
 import { ViewModel, view } from "@yoskutik/react-vvm";
-import { makeObservable } from "mobx";
-import { NavigateMVVM } from "../../../router/NavigateMVVM";
+import { action, makeObservable, observable, runInAction } from "mobx";
 import BaseTemplate from "../../../modules/PageTemplate/BaseTemplate";
+import cl from "./Main.module.scss";
+import { createRef } from "react";
+import ProductElement from "../../../modules/ProductElement/ProductElement";
+import {
+    APIGetProductsInfo,
+    IProductInfo,
+} from "../../../common/ApiManager/ApiManager";
+import { createNotify, NotifyTypes } from "../../../App";
 
 interface Props {}
 
@@ -9,41 +16,82 @@ export class MainViewModel extends ViewModel<unknown, Props> {
     constructor() {
         super();
         makeObservable(this);
+        this.loadProducts();
+        this.calculateAspect();
     }
-    nav = new NavigateMVVM();
+    nav?: { navigate: (to: string) => void };
+    loadProducts = async (deepth = 1): Promise<void> => {
+        const res = await APIGetProductsInfo();
+        if (res.errors !== undefined) {
+            if (deepth >= 3)
+                return createNotify(
+                    "",
+                    "Произошла ошибка при загрузке списка товаров",
+                    NotifyTypes.ERROR,
+                    2.25
+                );
+            return this.loadProducts(deepth + 1);
+        }
+        runInAction(() => {
+            this.productList = res.data!.getProducts;
+        });
+    };
+    @observable
+    productList: IProductInfo[] = [];
+    @observable
+    aspectRatio = 1;
+    protected onViewMounted(): void {
+        window.addEventListener("resize", this.calculateAspect);
+    }
+    protected onViewUnmounted(): void {
+        window.removeEventListener("resize", this.calculateAspect);
+    }
+    @action
+    calculateAspect = () => {
+        this.aspectRatio = window.innerWidth / window.innerHeight;
+    };
 }
 const Main = view(MainViewModel)<Props>(({ viewModel }) => {
+    console.log(viewModel.aspectRatio);
     return (
-        <BaseTemplate>
-            <div>
-                {viewModel.nav.Navigator}
-                <img
-                    src="https://185.197.34.18/product/picture?p=1&img=1-1721578234378.jpg"
-                    alt=""
-                />
-
-                <img
-                    src="https://185.197.34.18/product/picture?p=1&img=1-1721578234378.jpg"
-                    alt=""
-                />
-
-                <img
-                    src="https://185.197.34.18/product/picture?p=1&img=1-1721578234378.jpg"
-                    alt=""
-                />
-                <h2 onClick={() => viewModel.nav.navigate("/admin/login")}>
-                    Страница товаров
-                </h2>
-
-                <img
-                    src="https://185.197.34.18/product/picture?p=1&img=1-1721578234378.jpg"
-                    alt=""
-                />
-
-                <img
-                    src="https://185.197.34.18/product/picture?p=1&img=1-1721578234378.jpg"
-                    alt=""
-                />
+        <BaseTemplate nav={viewModel.nav}>
+            <div className={cl.Main}>
+                <div className={cl.PreviewScreen}>
+                    {viewModel.aspectRatio < 0.677 ? (
+                        <video
+                            className={cl.VideoBackground}
+                            src="/vertical.mp4"
+                            loop
+                            muted
+                            playsInline
+                            autoPlay
+                        />
+                    ) : (
+                        <video
+                            className={cl.VideoBackground}
+                            src="/horisontal.mp4"
+                            loop
+                            muted
+                            playsInline
+                            autoPlay
+                        />
+                    )}
+                    <div className={cl.PreviewText}>
+                        Текст/слоган над превью видео
+                    </div>
+                </div>
+                <h3>Каталог продукции:</h3>
+                <div className={cl.Catalog}>
+                    {viewModel.productList.map((product) => (
+                        <ProductElement
+                            productID={product.id}
+                            title={product.title}
+                            price={product.price}
+                            showSale={product.showSale}
+                            previousPrice={product.previousPrice}
+                        />
+                    ))}
+                </div>
             </div>
         </BaseTemplate>
     );

@@ -1,0 +1,36 @@
+.Main {
+    .PreviewScreen {
+        height: 92svh;
+        width: 100%;
+        position: relative;
+        overflow: hidden;
+        .VideoBackground {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            scale: 1.25;
+            object-fit: cover;
+        }
+        .PreviewText {
+            background-color: rgba($color: #000000, $alpha: 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            width: 100%;
+            font-size: 1.75em;
+            text-shadow: #000000 0 0 25px;
+            font-weight: bolder;
+            z-index: 5;
+            position: relative;
+        }
+    }
+    .Catalog {
+        display: flex;
+        justify-content: space-evenly;
+        flex-wrap: wrap;
+        margin: 1em;
+    }
+}

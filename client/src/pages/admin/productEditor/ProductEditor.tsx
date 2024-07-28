@@ -29,8 +29,10 @@ export class ProductEditorViewModel extends ViewModel<unknown, Props> {
         makeObservable(this);
         const { id } = useParams();
         if (id !== undefined && /^\d+$/.test(id)) this.productID = Number(id);
-        this.loadServerData();
         this.loadSizes();
+    }
+    protected onViewMounted(): void {
+        this.loadServerData();
     }
     productID?: number;
     @observable

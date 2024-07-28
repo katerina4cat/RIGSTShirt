@@ -36,10 +36,14 @@ export const pictureService = {
             try {
                 if (!fs.existsSync(`${mediaPath}/products/${product}`))
                     fs.mkdirSync(`${mediaPath}/products/${product}`);
-                const fileName =
-                    fs.readdirSync(`${mediaPath}/products/${product}`).length +
-                    "-" +
-                    Date.now();
+                const fileName = `${
+                    Math.max(
+                        ...fs
+                            .readdirSync(`${mediaPath}/products/${product}`)
+                            .map((path) => Number(path.split("-")[0]))
+                    ) + 1
+                }-${Date.now()}`;
+
                 fs.writeFileSync(
                     `${mediaPath}/products/${product}/${fileName}.${ext}`,
                     req.body
@@ -84,12 +88,29 @@ export const pictureService = {
         try {
             const product = req.query.p;
             const picture = req.query.img;
-            if (product === undefined || picture === undefined) {
+            if (product === undefined) {
                 throw ApiError.BadRequest(
                     "Не указаны верные параметры запроса!"
                 );
             }
-            res.sendFile(`${mediaPath}/products/${product}/${picture}`);
+            if (picture === undefined) {
+                if (
+                    fs.existsSync(`${mediaPath}/products/${product}`) &&
+                    fs.readdirSync(`${mediaPath}/products/${product}`).length >
+                        0
+                ) {
+                    res.status(200).sendFile(
+                        `${mediaPath}/products/${product}/${
+                            fs.readdirSync(
+                                `${mediaPath}/products/${product}`
+                            )[0]
+                        }`
+                    );
+                } else res.status(404).send(false);
+            } else
+                res.status(200).sendFile(
+                    `${mediaPath}/products/${product}/${picture}`
+                );
         } catch (err) {
             next(err);
         }
