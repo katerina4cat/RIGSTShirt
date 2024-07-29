@@ -3,6 +3,7 @@ import Login from "../pages/admin/login/Login";
 import Main from "../pages/common/main/Main";
 import Menu from "../pages/admin/menu/Menu";
 import ProductEditor from "../pages/admin/productEditor/ProductEditor";
+import ProductViewer from "../pages/common/productViewer/ProductViewer";
 
 export const roots: RouteObject[] = [
     {
@@ -25,7 +26,10 @@ export const roots: RouteObject[] = [
     {
         path: "/",
         element: <Main />,
-        children: [],
+    },
+    {
+        path: "product/:id",
+        element: <ProductViewer />,
     },
     { path: "*", element: <Navigate to={"/"} /> },
 ];

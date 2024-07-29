@@ -1,0 +1,26 @@
+.Cart {
+    position: fixed;
+    right: 0.5em;
+    bottom: 4vh;
+    z-index: 50;
+    background-color: #807986b6;
+    border-radius: 50%;
+    aspect-ratio: 1;
+    height: 2em;
+    padding: 0.75em;
+    .Icon {
+        fill: #a6a1aa;
+        height: 2em;
+        aspect-ratio: 1;
+        transform: translateY(-5%);
+    }
+    .Count {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        font-size: 0.75em;
+        font-weight: bold;
+        transform: translate(-50%, -35%);
+        color: #a6a1aa;
+    }
+}

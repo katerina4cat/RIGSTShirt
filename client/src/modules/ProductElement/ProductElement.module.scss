@@ -4,9 +4,8 @@
     align-items: center;
     margin: 0.75em;
     margin-bottom: 1.25em;
-    width: 150px;
-    aspect-ratio: 3/1.75;
-    @media (min-width: 600px) {
+    width: 40%;
+    @media (min-width: 650px) {
         width: 283px;
         aspect-ratio: 3/1.35;
     }
@@ -29,7 +28,7 @@
         .Title {
             white-space: normal;
             font-size: 0.75em;
-            @media (min-width: 600px) {
+            @media (min-width: 650px) {
                 font-size: 0.95em;
             }
 
@@ -42,6 +41,9 @@
             display: flex;
             padding: 1em;
             font-weight: bold;
+            @media (max-width: 650px) {
+                font-size: 0.75em;
+            }
             .Current {
                 color: #d32326;
             }

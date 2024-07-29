@@ -9,6 +9,7 @@ import {
     IProductInfo,
 } from "../../../common/ApiManager/ApiManager";
 import { createNotify, NotifyTypes } from "../../../App";
+import CartBlock from "../../../modules/CartBlock/CartBlock";
 
 interface Props {}
 
@@ -19,7 +20,7 @@ export class MainViewModel extends ViewModel<unknown, Props> {
         this.loadProducts();
         this.calculateAspect();
     }
-    nav?: { navigate: (to: string) => void };
+    nav = { navigate: (to: string) => {} };
     loadProducts = async (deepth = 1): Promise<void> => {
         const res = await APIGetProductsInfo();
         if (res.errors !== undefined) {
@@ -50,9 +51,11 @@ export class MainViewModel extends ViewModel<unknown, Props> {
     calculateAspect = () => {
         this.aspectRatio = window.innerWidth / window.innerHeight;
     };
+    goToProduct = (id: number) => {
+        this.nav?.navigate("/product/" + id);
+    };
 }
 const Main = view(MainViewModel)<Props>(({ viewModel }) => {
-    console.log(viewModel.aspectRatio);
     return (
         <BaseTemplate nav={viewModel.nav}>
             <div className={cl.Main}>
@@ -89,9 +92,11 @@ const Main = view(MainViewModel)<Props>(({ viewModel }) => {
                             price={product.price}
                             showSale={product.showSale}
                             previousPrice={product.previousPrice}
+                            onClick={() => viewModel.goToProduct(product.id)}
                         />
                     ))}
                 </div>
+                <CartBlock nav={viewModel.nav!} />
             </div>
         </BaseTemplate>
     );

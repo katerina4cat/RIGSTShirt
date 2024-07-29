@@ -107,8 +107,8 @@ export class ProductEditorViewModel extends ViewModel<unknown, Props> {
             this.nav.navigate("/admin/edit/" + res);
             this.productID = res;
         }
-        const res = await APIGetProductInfo(this.productID);
-        if (res.errors !== undefined) {
+        const res = await APIGetProductInfo(this.productID, true);
+        if (res === undefined || res.errors !== undefined) {
             createNotify(
                 "Редактор товара",
                 "Не удалось открыть редактор!",

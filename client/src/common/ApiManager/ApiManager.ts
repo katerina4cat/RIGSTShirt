@@ -69,16 +69,21 @@ export interface IProductInfo {
     deleted: boolean;
     sizes: {
         id: number;
+        title?: string;
     }[];
     errors: undefined;
 }
 
-export const APIGetProductInfo = async (id: number) => {
+export const APIGetProductInfo = async (
+    id: number,
+    deleted = false,
+    sizeTitle = false
+) => {
     try {
         const res = await axios.post(baseURL + "/graphql", {
             query: `
 {
-  getProducts(id:${id}, showDeleted:true){
+  getProducts(id:${id}, showDeleted:${deleted}){
     id
     title
     description
@@ -88,10 +93,12 @@ export const APIGetProductInfo = async (id: number) => {
     previousPrice
     sizes {
       id
+      ${sizeTitle ? "title" : ""}
     }
   }
 }`,
         });
+        console.log(res);
         return res.data.data.getProducts[0] as IProductInfo;
     } catch (err) {
         return { errors: [{ message: "Не удалось подключиться к серверу" }] };

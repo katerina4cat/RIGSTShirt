@@ -8,6 +8,7 @@ interface Props {
     price: number;
     previousPrice?: number;
     showSale: boolean;
+    onClick?: () => void;
 }
 
 export class ProductElementViewModel extends ViewModel<unknown, Props> {
@@ -18,7 +19,10 @@ export class ProductElementViewModel extends ViewModel<unknown, Props> {
 }
 const ProductElement = view(ProductElementViewModel)<Props>(({ viewModel }) => {
     return (
-        <div className={cl.ProductElement}>
+        <div
+            className={cl.ProductElement}
+            onClick={viewModel.viewProps.onClick}
+        >
             <img
                 src={`/api/product/picture/?p=${viewModel.viewProps.productID}`}
                 alt=""

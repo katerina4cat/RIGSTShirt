@@ -1,0 +1,20 @@
+.Dots {
+    bottom: -16px !important;
+}
+.Dots > .slick-active > button {
+    height: 20px !important;
+    width: 20px !important;
+    border-radius: 50% !important;
+    background-color: #8f54c7 !important;
+    border: solid #66616b 2px !important;
+    margin-left: 4px;
+}
+
+.Dots > li > button {
+    height: 20px !important;
+    width: 20px !important;
+    border-radius: 50% !important;
+    background-color: #362843 !important;
+    border: solid #66616b 2px !important;
+    opacity: 1 !important;
+}
