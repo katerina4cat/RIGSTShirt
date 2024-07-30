@@ -1,5 +1,5 @@
 .InputBox {
-    padding-top: 0.5em;
+    padding-top: 1.5em;
     .Input {
         position: relative;
         .Placeholder {
@@ -18,8 +18,8 @@
             outline: none;
             width: 100%;
             background-color: #362843;
-            border: solid #444 2px;
-            border-radius: 12px;
+            border: solid #444 1px;
+            border-radius: 6px;
             padding: 0.5em 0;
             text-indent: 0.75em;
             font-size: 1.2em;
@@ -44,6 +44,9 @@
             /* Firefox */
             &[type="number"] {
                 -moz-appearance: textfield;
+            }
+            &:invalid {
+                background-color: #b9314e62;
             }
         }
     }

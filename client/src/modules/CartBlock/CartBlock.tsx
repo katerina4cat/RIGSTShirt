@@ -2,7 +2,7 @@ import { ViewModel, view } from "@yoskutik/react-vvm";
 import { makeObservable } from "mobx";
 import cl from "./CartBlock.module.scss";
 import CartIcon from "../../icons/shopping-bag.svg?react";
-import cartManager from "../../common/ApiManager/CartManager";
+import cartManager from "../../common/CartManager";
 
 interface Props {
     nav: { navigate: (to: string) => void };

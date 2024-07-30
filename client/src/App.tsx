@@ -26,7 +26,7 @@ export const enum NotifyTypes {
     SUCCESS,
 }
 
-const NotifyPlacement = "bottomLeft";
+const NotifyPlacement = "topRight";
 
 const App = view(AppViewModel)<Props>(({ viewModel }) => {
     const [api, contextHolder] = notification.useNotification();
@@ -89,6 +89,7 @@ const App = view(AppViewModel)<Props>(({ viewModel }) => {
                         colorPrimary: "rgba(154, 148, 158, 0)",
                         controlOutline: "rgb(154, 148, 158)",
                         colorPrimaryHover: "rgb(154, 148, 158)",
+                        colorTextPlaceholder: "rgb(154, 148, 158)",
                     },
                     Switch: {
                         colorPrimary: "rgb(108, 61, 150)",

@@ -4,7 +4,7 @@ import cl from "./Header.module.scss";
 import LogOutIcon from "../../icons/logout.svg?react";
 import BackIcon from "../../icons/back.svg?react";
 import { NavigateMVVM } from "../../router/NavigateMVVM";
-import { APILogOut } from "../../common/ApiManager/ApiManager";
+import { APILogOut } from "../../common/ApiManager";
 import { createNotify, NotifyTypes } from "../../App";
 
 interface Props {

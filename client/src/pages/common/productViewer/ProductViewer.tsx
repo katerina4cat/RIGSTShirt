@@ -3,16 +3,17 @@ import { makeObservable, observable, runInAction } from "mobx";
 import cl from "./ProductViewer.module.scss";
 import BaseTemplate from "../../../modules/PageTemplate/BaseTemplate";
 import { useParams } from "react-router-dom";
-import {
-    APIGetProductInfo,
-    IProductInfo,
-} from "../../../common/ApiManager/ApiManager";
+import { APIGetProductInfo, IProductInfo } from "../../../common/ApiManager";
 import { createNotify, NotifyTypes } from "../../../App";
 import ImageSlider from "../../../modules/ImageSlider/ImageSlider";
 import CartBlock from "../../../modules/CartBlock/CartBlock";
 import { Button, Select } from "antd";
 import CartAddIcon from "../../../icons/shopping-bag-plus.svg?react";
-import cartManager from "../../../common/ApiManager/CartManager";
+import cartManager from "../../../common/CartManager";
+import {
+    selections,
+    selectionValue2id,
+} from "../../../common/SelectTransformers";
 
 interface Props {}
 
@@ -48,7 +49,6 @@ export class ProductViewerViewModel extends ViewModel<unknown, Props> {
         runInAction(() => {
             this.productInfo = res;
         });
-        console.log(res);
     };
 
     addProductToCart = () => {
@@ -94,17 +94,12 @@ const ProductViewer = view(ProductViewerViewModel)<Props>(({ viewModel }) => {
                     </div>
                     <Select
                         onChange={(value) =>
-                            (viewModel.currentSelect = Number(
-                                value.split("|")[0]
-                            ))
+                            (viewModel.currentSelect = selectionValue2id(value))
                         }
                         className={cl.SelectSize}
                         placeholder="Размер"
-                        options={viewModel.productInfo?.sizes.map(
-                            (sizeInfo: { id: number; title?: string }) => ({
-                                label: sizeInfo.title || "-",
-                                value: sizeInfo.id + "|" + sizeInfo.title,
-                            })
+                        options={selections.size.options(
+                            viewModel.productInfo?.sizes
                         )}
                     />
                     <Button

@@ -16,14 +16,12 @@ class CartManager {
 
     saveData = () => {
         localStorage.setItem("CartData", JSON.stringify(this.selectedProducts));
-        window.removeEventListener("beforeunload", this.saveData);
     };
     @observable
     selectedProducts: CartElement[] = [];
     constructor() {
         makeObservable(this);
         this.loadData();
-        window.addEventListener("beforeunload", this.saveData);
     }
     @action
     addProduct = (productID: number, sizeID: number) => {
@@ -39,6 +37,7 @@ class CartManager {
             size: sizeID,
             count: 1,
         });
+        this.saveData();
     };
     @action
     subProduct = (productID: number, sizeID: number) => {
@@ -50,6 +49,7 @@ class CartManager {
                 return this.remProduct(productID, sizeID);
             foundedProduct.count--;
         }
+        this.saveData();
     };
     @action
     remProduct = (productID: number, sizeID: number) => {
@@ -59,6 +59,7 @@ class CartManager {
                     !(products.id === productID && products.size === sizeID)
             ),
         ];
+        this.saveData();
     };
 }
 const cartManager = new CartManager();

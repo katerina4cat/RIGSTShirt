@@ -10,8 +10,8 @@ type Mutation {
     ): OrderInfo
 }
 type Query {
-    getProducts(id: ID, showDeleted: Boolean): [Product]
-    getSizes: [Size]
+    getProducts(id: Int, showDeleted: Boolean, ids: [Int!]): [Product]
+    getSizes(ids: [Int!]): [Size]
 
     register(login: String!, password: String!): Boolean
     login(login: String!, password: String!): Boolean

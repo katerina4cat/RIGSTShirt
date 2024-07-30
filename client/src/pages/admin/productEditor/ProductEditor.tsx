@@ -10,13 +10,17 @@ import {
     APIGetProductInfo,
     APIGetSizes,
     IProductInfo,
-} from "../../../common/ApiManager/ApiManager";
+} from "../../../common/ApiManager";
 import BaseTemplate from "../../../modules/PageTemplate/BaseTemplate";
 import Loading from "../../../modules/PageTemplate/Loading";
 import { createNotify, NotifyTypes } from "../../../App";
 import Uploader from "../../../modules/Uploader/Uploader";
 import { useParams } from "react-router-dom";
 import InputArea from "../../../modules/InputArea/InputArea";
+import {
+    selections,
+    selectionValue2id,
+} from "../../../common/SelectTransformers";
 
 interface Props {}
 
@@ -165,14 +169,11 @@ export class ProductEditorViewModel extends ViewModel<unknown, Props> {
             }
             return;
         }
-        this.sizes = res.map((sizeInfo: { id: number; title: string }) => ({
-            label: sizeInfo.title,
-            value: sizeInfo.id + "|" + sizeInfo.title,
-        }));
+        this.sizes = selections.size.options(res);
     };
 
     handleSelected = (values: string[]) => {
-        this.selectedSizes = values.map((value) => Number(value.split("|")[0]));
+        this.selectedSizes = values.map((value) => selectionValue2id(value));
     };
 
     saveChanges = () => {
@@ -272,10 +273,11 @@ const ProductEditor = view(ProductEditorViewModel)<Props>(({ viewModel }) => {
                                 viewModel.selectedSizes
                                     .map(
                                         (select) =>
-                                            viewModel.sizes.find((element) =>
-                                                element.value.startsWith(
-                                                    select + "|"
-                                                )
+                                            viewModel.sizes.find(
+                                                (element) =>
+                                                    selectionValue2id(
+                                                        element.value
+                                                    ) === select
                                             )?.value
                                     )
                                     .filter(Boolean) as string[]

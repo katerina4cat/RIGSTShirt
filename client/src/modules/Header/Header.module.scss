@@ -18,12 +18,14 @@
             width: 3.5vh;
             stroke: #a6a1aa;
             fill: #a6a1aa;
+            cursor: pointer;
         }
         .BackTitle {
             position: absolute;
             transform: translateY(-100%);
             font-size: 0.85em;
             color: #a6a1aa;
+            cursor: pointer;
         }
     }
     .LogoBox {

@@ -4,6 +4,8 @@ import Main from "../pages/common/main/Main";
 import Menu from "../pages/admin/menu/Menu";
 import ProductEditor from "../pages/admin/productEditor/ProductEditor";
 import ProductViewer from "../pages/common/productViewer/ProductViewer";
+import Cart from "../pages/common/cart/Cart";
+import CreatingOrder from "../pages/common/creatingOrder/CreatingOrder";
 
 export const roots: RouteObject[] = [
     {
@@ -30,6 +32,14 @@ export const roots: RouteObject[] = [
     {
         path: "product/:id",
         element: <ProductViewer />,
+    },
+    {
+        path: "cart",
+        element: <Cart />,
+    },
+    {
+        path: "order",
+        element: <CreatingOrder />,
     },
     { path: "*", element: <Navigate to={"/"} /> },
 ];

@@ -2,7 +2,7 @@ import { ViewModel, view } from "@yoskutik/react-vvm";
 import { action, makeObservable, observable } from "mobx";
 import cl from "./Menu.module.scss";
 import { Button } from "antd";
-import { APIAccessTest } from "../../../common/ApiManager/ApiManager";
+import { APIAccessTest } from "../../../common/ApiManager";
 import BaseTemplate from "../../../modules/PageTemplate/BaseTemplate";
 import Loading from "../../../modules/PageTemplate/Loading";
 import { createNotify, NotifyTypes } from "../../../App";

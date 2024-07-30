@@ -53,4 +53,5 @@ export interface OrderFilterInput {
 export interface ProductsQuery {
     id?: number;
     showDeleted?: boolean;
+    ids?: number[];
 }

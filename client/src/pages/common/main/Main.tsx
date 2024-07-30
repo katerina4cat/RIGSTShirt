@@ -4,10 +4,7 @@ import BaseTemplate from "../../../modules/PageTemplate/BaseTemplate";
 import cl from "./Main.module.scss";
 import { createRef } from "react";
 import ProductElement from "../../../modules/ProductElement/ProductElement";
-import {
-    APIGetProductsInfo,
-    IProductInfo,
-} from "../../../common/ApiManager/ApiManager";
+import { APIGetProductsInfo, IProductInfo } from "../../../common/ApiManager";
 import { createNotify, NotifyTypes } from "../../../App";
 import CartBlock from "../../../modules/CartBlock/CartBlock";
 

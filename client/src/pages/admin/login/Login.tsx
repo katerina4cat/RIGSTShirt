@@ -6,7 +6,7 @@ import { Button } from "antd";
 import cl from "./Login.module.scss";
 import Input from "../../../modules/Input/Input";
 import { createNotify, NotifyTypes } from "../../../App";
-import { APILogin } from "../../../common/ApiManager/ApiManager";
+import { APILogin } from "../../../common/ApiManager";
 import BaseTemplate from "../../../modules/PageTemplate/BaseTemplate";
 
 interface Props {}

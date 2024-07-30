@@ -133,6 +133,33 @@ export const APIGetProductsInfo = async (): Promise<ProductsInfoApiResult> => {
     }
 };
 
+export const APIGetProductsCartInfo = async (
+    ids: number[]
+): Promise<ProductsInfoApiResult> => {
+    try {
+        const res = await axios.post(baseURL + "/graphql", {
+            query: `
+{
+  getProducts(ids:[${ids.join(",")}]){
+    id
+    title
+    description
+    price
+    showSale
+    sizes {
+      id
+      title
+    }
+  }
+}`,
+        });
+        if (res.data.errors !== undefined) throw 1;
+        return res.data as ProductsInfoApiResult;
+    } catch (err) {
+        return { errors: [{ message: "Не удалось подключиться к серверу" }] };
+    }
+};
+
 export const APIGetProductPictureUrls = async (id: number) => {
     try {
         const res = await axios.get(baseURL + "/product/list/?p=" + id);
@@ -144,12 +171,12 @@ export const APIGetProductPictureUrls = async (id: number) => {
     }
 };
 
-export const APIGetSizes = async () => {
+export const APIGetSizes = async (ids?: number[]) => {
     try {
         const res = await axios.post(baseURL + "/graphql", {
             query: `
 {
-  getSizes{
+  getSizes${ids !== undefined ? `(ids:[${ids.join(",")}])` : undefined}{
     id
     title
   }

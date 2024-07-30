@@ -6,6 +6,7 @@ export const productsServices = {
     getProducts: async ({
         id,
         showDeleted,
+        ids,
     }: ProductsQuery): Promise<IResultProduct[]> => {
         let query = `SELECT
     product.*,
@@ -18,13 +19,20 @@ FROM
 
         if (showDeleted !== true) filter.push(`product.deleted=0`);
         if (id !== undefined) filter.push(`product.id=${id}`);
+        if (ids !== undefined) filter.push(`product.id IN (${ids.join(",")})`);
 
         if (filter.length) query += " WHERE " + filter.join(" AND ");
 
         const products = await DBManager.query<IResultProduct>(query + ";");
         return products;
     },
-    getSizes: async (): Promise<ISize[]> => {
-        return await DBManager.query<ISize>(`SELECT * FROM size;`);
+    getSizes: async ({ ids }: { ids?: number[] }): Promise<ISize[]> => {
+        return await DBManager.query<ISize>(
+            `SELECT * FROM size ${
+                ids !== undefined
+                    ? `WHERE size.id IN (${ids.join(",")})`
+                    : undefined
+            };`
+        );
     },
 };
