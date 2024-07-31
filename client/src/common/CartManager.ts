@@ -7,6 +7,10 @@ interface CartElement {
 }
 
 class CartManager {
+    clearCart() {
+        this.selectedProducts = [];
+        localStorage.removeItem("CartData");
+    }
     @action
     loadData = () => {
         this.selectedProducts = JSON.parse(

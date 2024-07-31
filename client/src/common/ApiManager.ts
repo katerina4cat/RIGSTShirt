@@ -1,4 +1,6 @@
 import axios from "axios";
+import cartManager from "./CartManager";
+import { deliveryTypes } from "../../../shared/enums";
 
 const baseURL = "/api";
 
@@ -236,8 +238,44 @@ mutation{
     }
 };
 
-export const APICDEKInfoByID = async (id: string) => {
+export const APICreateOrder = async (
+    name: string,
+    surname: string,
+    phone: string,
+    email: string,
+    deliveryType: deliveryTypes,
+    PVZID: string | number,
+    lastname?: string
+) => {
     try {
+        const res = await axios.post(baseURL + "/graphql", {
+            query: `
+mutation{
+  addOrder(
+    cart:[${cartManager.selectedProducts
+        .map(
+            (product) =>
+                `{id: ${product.id}, size: ${product.size}, count: ${product.count}}`
+        )
+        .join(",")}], 
+    user:{
+      name: "${name}"
+      surname: "${surname}"
+      ${lastname ? `lastname: "${lastname}"` : ""}
+      phone: "${phone}"
+      email: "${email}"
+    },
+    delivery: {
+      deliveryType: ${deliveryType}
+      PVZID: "${PVZID.toString()}"
+    }
+  ){
+    id
+    status
+  }
+}`,
+        });
+        return res.data.data.addOrder;
     } catch (err) {
         return { errors: [{ message: "Не удалось подключиться к серверу" }] };
     }

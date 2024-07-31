@@ -61,6 +61,7 @@ export class ProductEditorViewModel extends ViewModel<unknown, Props> {
             | React.ChangeEvent<HTMLTextAreaElement>
     ) => {
         this.inputData[event.target.name as InputsNames] = event.target.value;
+        return event.target.value;
     };
     @action
     loadServerData = async () => {

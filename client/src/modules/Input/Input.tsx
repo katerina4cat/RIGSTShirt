@@ -6,7 +6,7 @@ import React from "react";
 interface Props extends React.InputHTMLAttributes<HTMLInputElement> {
     value: string;
     name: string;
-    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => string;
 }
 
 export class InputViewModel extends ViewModel<unknown, Props> {
@@ -19,8 +19,7 @@ export class InputViewModel extends ViewModel<unknown, Props> {
     active = false;
     @action
     onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        this.value = e.target.value;
-        this.viewProps.onChange(e);
+        this.value = this.viewProps.onChange(e);
     };
     @observable
     value: string;
