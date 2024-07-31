@@ -1,0 +1,49 @@
+.PointMany {
+    cursor: pointer;
+    height: 48px;
+    width: 48px;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    .Point {
+        height: 40px;
+        width: 40px;
+        border-radius: 50%;
+        background-color: #e6e2e9;
+        color: #0d0c0d;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+}
+.PointBorder {
+    cursor: pointer;
+    transform: translate(-50%, -100%);
+    clip-path: path("M 24 64 Q 48 40 48 24 A 1 1 0 0 0 0 24 Q 0 40 24 64");
+    height: 64px;
+    width: 48px;
+    position: relative;
+    .Point {
+        position: absolute;
+        background-color: #e6e2e9;
+        height: 40px;
+        width: 40px;
+        margin: 4px 4px 0 4px;
+        border-radius: 50%;
+        top: 0;
+        .Icon {
+            margin: 6px;
+            fill: #0d0c0d;
+            height: 24px;
+            width: 24px;
+        }
+    }
+}
+.CDEK {
+    background-color: #1ab248;
+}
+.PRus {
+    background-color: #3751f7;
+}

@@ -4,12 +4,13 @@ import {
     computed,
     makeObservable,
     observable,
+    reaction,
     runInAction,
 } from "mobx";
 import cl from "./CreatingOrder.module.scss";
 import BaseTemplate from "../../../modules/PageTemplate/BaseTemplate";
 import Input from "../../../modules/Input/Input";
-import { Select } from "antd";
+import { Button, Select } from "antd";
 import {
     selectionDeliverys,
     selectionValue2id,
@@ -20,18 +21,149 @@ import {
     YMapDefaultSchemeLayer,
     YMapDefaultFeaturesLayer,
     YMapComponentsProvider,
-    YMapMarker,
     YMapListener,
-    YMapCollection,
 } from "ymap3-components";
-import OfficeIcon from "../../../icons/office.svg?react";
 import axios from "axios";
+import {
+    CDEKPointInfo,
+    decoders,
+    PRusPointInfo,
+} from "../../../../../shared/Decoders";
+import {
+    Bounds,
+    filterPoints,
+    getDistance,
+    Point,
+} from "../../../common/MapPointerFilter";
+import MapMarker from "../../../modules/MapMarker/MapMarker";
 import { createNotify, NotifyTypes } from "../../../App";
+import cartManager from "../../../common/CartManager";
+import { APIGetProductsCartInfo } from "../../../common/ApiManager";
 
 interface Props {}
 type Inputs = "first" | "last" | "middle" | "phone" | "email";
 
 export class CreatingOrderViewModel extends ViewModel<unknown, Props> {
+    tryCreateOrder = async () => {
+        createNotify(
+            "",
+            "Создание заказа ещё не реализовано!",
+            NotifyTypes.ERROR
+        );
+    };
+
+    constructor() {
+        super();
+        makeObservable(this);
+        this.loadCDEK();
+        this.loadPRus();
+        this.loadProductInfo();
+        reaction(
+            () => this.selectedID,
+            async (value) => {
+                if (!value) return;
+                if (this.deliveryType === deliveryTypes.RUSSIAN_POST) {
+                    const res = await axios.get(
+                        `https://widget.pochta.ru/api/pvz/${value}`
+                    );
+                    const addressData = `${res.data.deliveryPointIndex}, ${
+                        res.data.address.place
+                            ? res.data.address.place + ", "
+                            : ""
+                    }${
+                        res.data.address.location
+                            ? res.data.address.location + ", "
+                            : ""
+                    }${res.data.address.street || ""}${
+                        res.data.address.house
+                            ? ", д." + res.data.address.house
+                            : ""
+                    }`;
+                    runInAction(() => {
+                        this.selectedAdress = (
+                            <>
+                                <div className={cl.Address}>{addressData}</div>
+                                <div className={cl.GetTo}>{res.data.getto}</div>
+                            </>
+                        );
+                    });
+                    return;
+                }
+                if (this.deliveryType === deliveryTypes.CDEK) {
+                    const res = await axios.get("/api/delivery/CDEK/" + value);
+                    if ("errors" in res.data) {
+                        createNotify(
+                            "",
+                            "Произошла ошибка при получении информации о выбранном офисе",
+                            NotifyTypes.ERROR
+                        );
+                        return;
+                    }
+
+                    const addressData = `${res.data.code}, г. ${
+                        res.data.city ? res.data.city + ", " : ""
+                    }${res.data.address ? res.data.address : ""}`;
+                    runInAction(() => {
+                        this.selectedAdress = (
+                            <>
+                                <div className={cl.Address}>{addressData}</div>
+                                <div className={cl.GetTo}>
+                                    {res.data.type === "PVZ"
+                                        ? "Пунк выдачи заказа"
+                                        : res.data.type === "POSTAMAT"
+                                        ? "Постамат"
+                                        : ""}
+                                </div>
+                            </>
+                        );
+                    });
+                }
+            }
+        );
+    }
+    @observable
+    productsInfo: { id: number; price: number }[] = [];
+
+    loadProductInfo = async () => {
+        const res = await APIGetProductsCartInfo(
+            cartManager.selectedProducts
+                .map((product) => product.id)
+                .filter(
+                    (element, index, arr) => arr.indexOf(element) === index
+                ),
+            true
+        );
+        if (res.data) this.productsInfo = res.data.getProducts;
+    };
+
+    @observable
+    deliveryType?: deliveryTypes;
+    @action
+    changeDeliveryType = (value: string) => {
+        this.selectedID = undefined;
+        this.deliveryType = selectionValue2id(value);
+    };
+
+    @observable
+    currentLocation = {
+        center: [37.61556, 55.75222],
+        zoom: 12,
+    };
+    @action
+    zoomInCenter = (center: [number, number]) => {
+        this.currentLocation = {
+            center: center,
+            zoom: this.currentLocation.zoom + 0.75,
+        };
+    };
+    @observable
+    currentBounds: Bounds = [
+        [37.44664520507811, 55.811037458931246],
+        [37.78447479492187, 55.69331334155078],
+    ];
+    @observable
+    combineDistance = 0.028619765398027238;
+
     @action
     onUpdate = ({ location, mapInAction }: any) => {
         if (!mapInAction) {
@@ -40,118 +172,94 @@ export class CreatingOrderViewModel extends ViewModel<unknown, Props> {
                 zoom: location.zoom,
             };
             this.currentBounds = location.bounds;
-            this.getPochtaOfices();
+            this.combineDistance = getDistance([
+                (location.bounds[1][0] - location.bounds[0][0]) * 0.08,
+                (location.bounds[0][1] - location.bounds[1][1]) * 0.08,
+            ]);
         }
     };
-    @observable
-    currentLocation = {
-        center: [37.61556, 55.75222],
-        zoom: 12,
-    };
-    @observable
-    currentBounds = [
-        [37.44664520507811, 55.811037458931246],
-        [37.78447479492187, 55.69331334155078],
-    ];
-    lastPochtaBounds = [
-        [37.44664520507811, 55.811037458931246],
-        [37.44664520507811, 55.811037458931246],
-    ];
 
     @observable
-    pochtaOffices: { id: number; cord: number[] }[] = [];
+    PRusPoints: PRusPointInfo[] = [];
 
-    getCDEKOfices = async () => {
-        const res = await axios.post(
-            `https://www.cdek.ru/api-site/website/office/?locale=ru`,
-            {
-                topLeftPoint: {
-                    longitude: this.currentBounds[0][0],
-                    latitude: this.currentBounds[0][1],
-                },
-                bottomRightPoint: {
-                    longitude: this.currentBounds[1][0],
-                    latitude: this.currentBounds[1][1],
-                },
-                limit: 10000,
-                offset: 0,
-                onlyCoordinate: true,
-                precision: 3,
-                extFilters: [
-                    "NOT_TEMPORARY_CLOSED",
-                    "NOT_PRIVATE",
-                    "NOT_CLOSED",
-                    "ONLY_ATI",
-                ],
-            }
-        );
-    };
-
-    getOfficesPochta = (
-        currentBounds: number[][],
-        lastPochtaBounds: number[][],
-        page = 1
-    ) =>
-        axios.post(`https://widget.pochta.ru/api/pvz`, {
-            settings_id: 50317,
-            pageSize: 200,
-            page: page,
-            currentTopRightPoint: currentBounds[0],
-            currentBottomLeftPoint: currentBounds[1],
-            prevTopRightPoint: lastPochtaBounds[0],
-            prevBottomLeftPoint: lastPochtaBounds[1],
-            pvzType: ["russian_post", "postamat"],
-        });
-
-    getPochtaOfices = async () => {
-        const prevLastPochtaBounds = [...this.lastPochtaBounds];
-        this.lastPochtaBounds = this.currentBounds;
-        const res = await this.getOfficesPochta(
+    @computed
+    get viewPRus() {
+        return filterPoints(
+            this.PRusPoints,
             this.currentBounds,
-            prevLastPochtaBounds
+            this.combineDistance
         );
-        const newPochtaOffices = this.pochtaOffices.filter(
-            (office) =>
-                office.cord[0] > this.currentBounds[0][0] &&
-                office.cord[0] < this.currentBounds[1][0] &&
-                office.cord[1] > this.currentBounds[1][1] &&
-                office.cord[1] < this.currentBounds[0][1]
-        );
-        newPochtaOffices.push(
-            ...res.data.data.map((office: any) => ({
-                id: office.id,
-                cord: office.geo.coordinates,
-            }))
-        );
-        const totalPages = res.data.totalPages;
-        for (let i = 2; i <= totalPages; i++) {
-            const res = await this.getOfficesPochta(
-                this.currentBounds,
-                prevLastPochtaBounds
-            );
-            newPochtaOffices.push(
-                ...res.data.data.map((office: any) => ({
-                    id: office.id,
-                    cord: office.geo.coordinates,
-                }))
-            );
-        }
-        newPochtaOffices.filter(
-            (office, ind, arr) =>
-                ind === arr.findIndex((off) => off.id === office.id)
-        );
+    }
+
+    loadPRus = async () => {
+        const res = await axios.get("/api/delivery/PRus", {
+            responseType: "arraybuffer",
+        });
+        const data = decoders.PRus.decodePoint(new Uint8Array(res.data));
         runInAction(() => {
-            this.pochtaOffices = newPochtaOffices;
+            this.PRusPoints = data;
         });
     };
 
     @observable
-    CDEKOfices = [];
+    CDEKPoints: CDEKPointInfo[] = [];
 
-    constructor() {
-        super();
-        makeObservable(this);
+    @computed
+    get viewCDEK() {
+        return filterPoints(
+            this.CDEKPoints,
+            this.currentBounds,
+            this.combineDistance
+        );
     }
+
+    loadCDEK = async () => {
+        const res = await axios.get("/api/delivery/CDEK", {
+            responseType: "arraybuffer",
+            headers: {
+                "Content-Type": "application/gzip",
+            },
+        });
+        const data = decoders.CDEK.decodePoint(new Uint8Array(res.data));
+        runInAction(() => {
+            this.CDEKPoints = data;
+        });
+    };
+
+    @computed
+    get MapMarkers(): JSX.Element | undefined {
+        switch (this.deliveryType) {
+            case deliveryTypes.CDEK:
+                return (
+                    <MapMarker
+                        points={this.viewCDEK}
+                        markerType={deliveryTypes.CDEK}
+                        zoomIn={this.zoomInCenter}
+                        onClick={this.onClickMarker}
+                    />
+                );
+            case deliveryTypes.RUSSIAN_POST:
+                return (
+                    <MapMarker
+                        points={this.viewPRus}
+                        markerType={deliveryTypes.RUSSIAN_POST}
+                        zoomIn={this.zoomInCenter}
+                        onClick={this.onClickMarker}
+                    />
+                );
+        }
+    }
+
+    @observable
+    selectedID?: number | string;
+    @observable
+    selectedAdress?: JSX.Element | string;
+
+    @action
+    onClickMarker = (point: Point) => {
+        this.selectedID = point.id;
+    };
+
     @observable
     inputData: { [key in Inputs]: string } = {
         first: "",
@@ -164,16 +272,10 @@ export class CreatingOrderViewModel extends ViewModel<unknown, Props> {
     handleInput = (event: React.ChangeEvent<HTMLInputElement>) => {
         this.inputData[event.target.name as Inputs] = event.target.value;
     };
-    @observable
-    deliveryType?: deliveryTypes;
-    @action
-    changeDeliveryType = (value: string) => {
-        this.deliveryType = selectionValue2id(value);
-    };
 }
 const CreatingOrder = view(CreatingOrderViewModel)<Props>(({ viewModel }) => {
     return (
-        <BaseTemplate>
+        <BaseTemplate backUrl="/cart">
             <div className={cl.CreatingOrder}>
                 <h3>Оформление заказа</h3>
                 <div className={cl.DataBox}>
@@ -229,61 +331,35 @@ const CreatingOrder = view(CreatingOrderViewModel)<Props>(({ viewModel }) => {
                         >
                             <YMapDefaultSchemeLayer />
                             <YMapDefaultFeaturesLayer />
-                            <YMapCollection>
-                                <YMapListener onUpdate={viewModel.onUpdate} />
-                                {viewModel.deliveryType ===
-                                deliveryTypes.CDEK ? (
-                                    <YMapMarker
-                                        coordinates={[37.61556, 55.75222]}
-                                        draggable={false}
-                                    >
-                                        (
-                                        <div
-                                            className={`${cl.PointBorder} ${cl.CDEK}`}
-                                        >
-                                            <div className={cl.Point}>
-                                                <OfficeIcon
-                                                    className={cl.Icon}
-                                                />
-                                            </div>
-                                        </div>
-                                        )
-                                    </YMapMarker>
-                                ) : undefined}
-                                {viewModel.deliveryType ===
-                                deliveryTypes.RUSSIAN_POST
-                                    ? viewModel.pochtaOffices.map((office) => (
-                                          <YMapMarker
-                                              key={office.id}
-                                              coordinates={office.cord}
-                                              draggable={false}
-                                              onClick={() => {
-                                                  createNotify(
-                                                      "",
-                                                      "Вы выбрали офис #" +
-                                                          office.id,
-                                                      NotifyTypes.INFO
-                                                  );
-                                              }}
-                                          >
-                                              <div
-                                                  className={`${cl.PointBorder} ${cl.RUSSIAN_POST}`}
-                                              >
-                                                  <div className={cl.Point}>
-                                                      <OfficeIcon
-                                                          className={cl.Icon}
-                                                      />
-                                                  </div>
-                                              </div>
-                                          </YMapMarker>
-                                      ))
-                                    : undefined}
-                            </YMapCollection>
+                            <YMapListener onUpdate={viewModel.onUpdate} />
+                            {viewModel.MapMarkers}
                         </YMap>
                     </YMapComponentsProvider>
-                    <div className={cl.Adress}>
+                    <div className={cl.Address}>
                         <div>Выберанный адрес доставки:</div>
-                        <div></div>
+                        {viewModel.selectedAdress}
+                    </div>
+                    <div className={cl.EndPage}>
+                        <div className={cl.Total}>
+                            Сумма:
+                            <div className={cl.Price}>
+                                {cartManager.selectedProducts
+                                    .map(
+                                        (cartProduct) =>
+                                            (viewModel.productsInfo.find(
+                                                (product) =>
+                                                    product.id ===
+                                                    cartProduct.id
+                                            )?.price || 0) * cartProduct.count
+                                    )
+                                    .reduce((a, b) => a + b, 0)
+                                    .toLocaleString()}{" "}
+                                ₽
+                            </div>
+                        </div>
+                        <Button onClick={viewModel.tryCreateOrder}>
+                            Подтвердить заказ
+                        </Button>
                     </div>
                 </div>
             </div>

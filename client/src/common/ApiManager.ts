@@ -134,7 +134,8 @@ export const APIGetProductsInfo = async (): Promise<ProductsInfoApiResult> => {
 };
 
 export const APIGetProductsCartInfo = async (
-    ids: number[]
+    ids: number[],
+    onlyPrice = false
 ): Promise<ProductsInfoApiResult> => {
     try {
         const res = await axios.post(baseURL + "/graphql", {
@@ -142,13 +143,17 @@ export const APIGetProductsCartInfo = async (
 {
   getProducts(ids:[${ids.join(",")}]){
     id
-    title
-    description
     price
+    ${
+        onlyPrice
+            ? ""
+            : `title
+    description
     showSale
     sizes {
       id
       title
+    }`
     }
   }
 }`,
@@ -176,7 +181,7 @@ export const APIGetSizes = async (ids?: number[]) => {
         const res = await axios.post(baseURL + "/graphql", {
             query: `
 {
-  getSizes${ids !== undefined ? `(ids:[${ids.join(",")}])` : undefined}{
+  getSizes${ids !== undefined ? `(ids:[${ids.join(",")}])` : ""}{
     id
     title
   }
@@ -226,6 +231,13 @@ mutation{
 }`,
         });
         return res.data.data.updateProduct;
+    } catch (err) {
+        return { errors: [{ message: "Не удалось подключиться к серверу" }] };
+    }
+};
+
+export const APICDEKInfoByID = async (id: string) => {
+    try {
     } catch (err) {
         return { errors: [{ message: "Не удалось подключиться к серверу" }] };
     }

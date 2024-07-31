@@ -6,6 +6,7 @@
         display: flex;
         flex-direction: column;
         width: 80%;
+        max-width: 900px;
         .DeliverySelect {
             margin-top: 1.5em;
             height: 3em;
@@ -18,45 +19,39 @@
             margin-bottom: 0.5em;
         }
         .Map {
-            height: 45vh;
+            max-height: 45vh;
             width: 100%;
+            aspect-ratio: 1.2;
             border-radius: 8px;
-            .PointBorder {
-                cursor: pointer;
-                transform: translate(-50%, -100%);
-                clip-path: path(
-                    "M 24 64 Q 48 40 48 24 A 1 1 0 0 0 0 24 Q 0 40 24 64"
-                );
-                height: 64px;
-                width: 48px;
-                position: relative;
-                .Point {
-                    position: absolute;
-                    background-color: #e6e2e9;
-                    height: 40px;
-                    width: 40px;
-                    margin: 4px 4px 0 4px;
-                    border-radius: 50%;
-                    top: 0;
-                    .Icon {
-                        margin: 6px;
-                        fill: #0d0c0d;
-                        height: 24px;
-                        width: 24px;
-                    }
-                }
-            }
-            .CDEK {
-                background-color: #1ab248;
-            }
-            .RUSSIAN_POST {
-                background-color: #3751f7;
-            }
         }
-        .Adress {
+        .Address {
             margin-top: 0.5em;
             font-weight: bold;
             font-size: 1.25em;
+            .Address {
+                font-size: 1em;
+                font-weight: normal;
+            }
+            .GetTo {
+                font-size: 0.85em;
+                font-weight: normal;
+            }
+        }
+        .EndPage {
+            margin-top: 2em;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: end;
+            .Total {
+                display: flex;
+                margin-bottom: 0.75em;
+                .Price {
+                    color: #ef4a5b;
+                    font-weight: bold;
+                    margin-left: 0.5em;
+                }
+            }
         }
     }
 }

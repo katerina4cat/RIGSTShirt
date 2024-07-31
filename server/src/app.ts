@@ -19,6 +19,7 @@ import root from "graphql/root";
 import { IPayload } from "models/Payload";
 import { pictureRouter } from "router/pictureRoots";
 import { errorMiddleware } from "middleware/errorMiddleware";
+import { deliveryRouter } from "router/deliveryRoots";
 
 const app = express();
 
@@ -40,6 +41,7 @@ app.use("/graphql", (req, res) =>
         context: { req, res },
     })(req, res)
 );
+app.use(deliveryRouter);
 
 app.use(
     express.raw({
