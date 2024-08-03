@@ -27,6 +27,7 @@ class DatabaseManager {
         );
         this.connection.query(`USE ${process.env.DB_DATABASE};`);
         this.connection.commit();
+        this.connection.query("SET NAMES 'utf8mb4'");
     }
 }
 const DBManager = new DatabaseManager();

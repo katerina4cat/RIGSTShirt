@@ -1,5 +1,5 @@
 import axios from "axios";
-import { encoders } from "./encoders";
+import { encoders } from "./Encoders";
 import fs from "fs";
 import { mediaPath } from "app";
 

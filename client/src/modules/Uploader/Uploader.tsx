@@ -1,9 +1,10 @@
 import { ViewModel, view } from "@yoskutik/react-vvm";
-import { action, makeObservable, observable } from "mobx";
+import { action, makeObservable, observable, runInAction } from "mobx";
 import cl from "./Uploader.module.scss";
 import { GetProp, Upload, UploadFile, UploadProps, Image } from "antd";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { PlusOutlined } from "@ant-design/icons";
+import { createNotify, NotifyTypes } from "../../App";
 
 interface Props {
     productID: number;
@@ -45,7 +46,7 @@ export class UploaderViewModel extends ViewModel<unknown, Props> {
     };
 
     @observable
-    fileList: UploadFile<any>[] = [];
+    fileList: UploadFile[] = [];
     @action
     loadImages = async () => {
         const photos: string[] =
@@ -85,43 +86,75 @@ export class UploaderViewModel extends ViewModel<unknown, Props> {
         // Новый файл добавлен
         if (newFile !== undefined) {
             this.fileList.push(newFile);
+            const file = this.fileList.find((file) => file.uid == newFile.uid);
+            if (file) file.status = "uploading";
             axios
                 .post(
                     "/api/product/picture?p=" + this.viewProps.productID,
-                    await newFile.originFileObj?.arrayBuffer()
+                    await newFile.originFileObj?.arrayBuffer(),
+                    {
+                        onUploadProgress: (e) => {
+                            if (file)
+                                file.percent = e.progress
+                                    ? e.progress * 200
+                                    : 1;
+                        },
+                    }
                 )
                 .then((res) => {
-                    if (res.status === 200) {
-                        const file = this.fileList.find(
-                            (file) => file.uid == newFile.uid
-                        );
-                        if (!file) return;
-                        file.status = "done";
-                        file.name = res.data;
-                        file.url =
-                            "/api/product/picture?p=" +
-                            this.viewProps.productID +
-                            "&img=" +
-                            res.data;
-                    }
-                });
+                    if (file)
+                        if (res.status === 200) {
+                            if (!file) return;
+                            file.status = "done";
+                            file.name = res.data;
+                            file.url =
+                                "/api/product/picture?p=" +
+                                this.viewProps.productID +
+                                "&img=" +
+                                res.data;
+                            this.fileList = [...this.fileList];
+                        }
+                })
+                .catch(
+                    action((err: AxiosError) => {
+                        if (err.response!.status === 413) {
+                            runInAction(() => {
+                                if (file) {
+                                    file.status = "error";
+                                    file.error = "Файл слишком большой!";
+                                    this.fileList = [...this.fileList];
+                                }
+                            });
+                            createNotify(
+                                "Загрузка файла",
+                                "Размер файла слишком большой! Не больше 5mb",
+                                NotifyTypes.ERROR
+                            );
+                        }
+                    })
+                );
             return;
         }
         // Файл удалён
         if (deletedFile !== undefined) {
-            axios
-                .delete(
-                    "/api/product/picture?p=" +
-                        this.viewProps.productID +
-                        "&img=" +
-                        deletedFile.name
-                )
-                .then((res) => {
-                    if (res.status === 200)
-                        this.fileList = this.fileList.filter(
-                            (file) => file.uid !== deletedFile.uid
-                        );
-                });
+            if (deletedFile.status === "error")
+                this.fileList = this.fileList.filter(
+                    (file) => file.uid !== deletedFile.uid
+                );
+            else
+                axios
+                    .delete(
+                        "/api/product/picture?p=" +
+                            this.viewProps.productID +
+                            "&img=" +
+                            deletedFile.name
+                    )
+                    .then((res) => {
+                        if (res.status === 200)
+                            this.fileList = this.fileList.filter(
+                                (file) => file.uid !== deletedFile.uid
+                            );
+                    });
             return;
         }
     };

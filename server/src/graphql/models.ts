@@ -47,7 +47,7 @@ export interface CustomPointInput {
 export interface OrderFilterInput {
     orderID?: number;
     deliveryType?: deliveryTypes;
-    orderStatus?: number;
+    orderStatus?: string;
 }
 
 export interface ProductsQuery {

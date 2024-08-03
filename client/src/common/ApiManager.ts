@@ -100,7 +100,6 @@ export const APIGetProductInfo = async (
   }
 }`,
         });
-        console.log(res);
         return res.data.data.getProducts[0] as IProductInfo;
     } catch (err) {
         return { errors: [{ message: "Не удалось подключиться к серверу" }] };
@@ -113,15 +112,18 @@ interface ProductsInfoApiResult {
     };
     errors?: { message: string }[];
 }
-export const APIGetProductsInfo = async (): Promise<ProductsInfoApiResult> => {
+export const APIGetProductsInfo = async (
+    deleted = false
+): Promise<ProductsInfoApiResult> => {
     try {
         const res = await axios.post(baseURL + "/graphql", {
             query: `
 {
-  getProducts{
+  getProducts${deleted ? "(showDeleted:true)" : ""}{
     id
     title
     description
+    deleted
     price
     showSale
     previousPrice
@@ -277,6 +279,67 @@ mutation{
         });
         return res.data.data.addOrder;
     } catch (err) {
+        return { errors: [{ message: "Не удалось подключиться к серверу" }] };
+    }
+};
+
+interface Orders {
+    id: number;
+    client: {
+        name: string;
+        phone: string;
+    };
+    deliveryType: deliveryTypes;
+    status: string;
+    PVZID: string;
+    products: {
+        count: number;
+        price: number;
+    }[];
+}
+
+export const APIGetOrders = async (
+    filter: {
+        deliveryType?: number;
+        orderStatus?: string;
+    } = {}
+) => {
+    try {
+        let filterStr = "";
+        if (Object.values(filter).filter(Boolean).length > 0)
+            filterStr = `${Object.keys(filter)
+                .filter((key) =>
+                    Boolean(filter[key as "deliveryType" | "orderStatus"])
+                )
+                .map(
+                    (key) =>
+                        `${key}: ${
+                            filter[key as "deliveryType" | "orderStatus"]
+                        }`
+                )
+                .join(",")}`;
+        const res = await axios.post(baseURL + "/graphql", {
+            query: `
+{
+  getOrders(filter:{${filterStr}}){
+    id
+    client{
+      name
+      phone
+    }
+    deliveryType
+    status
+    PVZID
+    products{
+      count
+      price
+    }
+  }
+}`,
+        });
+        return res.data.data.getOrders as Orders[];
+    } catch (err) {
+        console.log(err);
         return { errors: [{ message: "Не удалось подключиться к серверу" }] };
     }
 };

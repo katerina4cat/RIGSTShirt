@@ -119,12 +119,14 @@ export const orderService = {
             if (filter?.deliveryType)
                 filters.push(`\`order\`.deliveryType=${filter.deliveryType}`);
             if (filter?.orderStatus)
-                filters.push(`\`order\`.orderStatus=${filter.orderStatus}`);
+                filters.push(
+                    `getOrderStatus(\`order\`.id)="${filter.orderStatus}"`
+                );
             if (filters.length) query += ` WHERE ${filters.join(" AND ")}`;
             const result = await DBManager.query<IOrderInfo>(query + ";");
-            return result;
-        } catch {
-            return ApiError.UnrealizedError();
+            return result || [];
+        } catch (err) {
+            return ApiError.RuntimeError("Произошла ошибка");
         }
     },
 };

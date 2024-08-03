@@ -1,0 +1,12 @@
+.ProductList {
+    .Catalog {
+        display: flex;
+        justify-content: space-evenly;
+        flex-wrap: wrap;
+        margin: 1em;
+        .Icon {
+            fill: #ded7e4a0;
+            width: 100%;
+        }
+    }
+}

@@ -25,7 +25,7 @@ const app = express();
 
 app.use(
     cors({
-        origin: "https://185.197.34.18:8443",
+        origin: "https://katerina4cat.space:8443",
         credentials: true,
     })
 );
@@ -46,7 +46,7 @@ app.use(deliveryRouter);
 app.use(
     express.raw({
         inflate: true,
-        limit: "4mb",
+        limit: "5mb",
         type: () => true,
     })
 );
@@ -55,7 +55,7 @@ app.use(pictureRouter);
 app.use(errorMiddleware);
 const httpsServer = require("https").createServer(credentials, app);
 httpsServer.listen(443, () => {
-    console.log("Server run on https://katerina4cat.ru");
+    console.log("Server run on https://katerina4cat.space");
 });
 
 export interface IContext {

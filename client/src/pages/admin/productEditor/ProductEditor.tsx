@@ -242,7 +242,7 @@ export class ProductEditorViewModel extends ViewModel<unknown, Props> {
 }
 const ProductEditor = view(ProductEditorViewModel)<Props>(({ viewModel }) => {
     return (
-        <BaseTemplate backUrl="/admin/menu" logout nav={viewModel.nav}>
+        <BaseTemplate backUrl="/admin/list" logout nav={viewModel.nav}>
             <Loading loading={viewModel.loading}>
                 <div className={cl.ProductEditor}>
                     <div className={cl.EditorBox}>

@@ -44,12 +44,19 @@ const Menu = view(MenuViewModel)<Props>(({ viewModel }) => {
                         <Button
                             className={cl.FunctionButton}
                             onClick={() =>
-                                viewModel.nav.navigate("/admin/edit")
+                                viewModel.nav.navigate("/admin/list")
                             }
                         >
                             Изменение/добавление товаров
                         </Button>
-                        <Button className={cl.FunctionButton}>Заказы</Button>
+                        <Button
+                            className={cl.FunctionButton}
+                            onClick={() =>
+                                viewModel.nav.navigate("/admin/orders")
+                            }
+                        >
+                            Заказы
+                        </Button>
                         <Button className={cl.FunctionButton}>
                             Заказ по номеру
                         </Button>

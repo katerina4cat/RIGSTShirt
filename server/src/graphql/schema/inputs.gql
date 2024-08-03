@@ -45,5 +45,5 @@ input DeliveryInput {
 input OrderFilterInput {
     orderID: Int
     deliveryType: Int
-    orderStatus: Int
+    orderStatus: String
 }

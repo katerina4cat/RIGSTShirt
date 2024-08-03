@@ -367,12 +367,11 @@ export class CreatingOrderViewModel extends ViewModel<unknown, Props> {
             ];
             if (newValue.length < 2) return oldValue;
             if (oldValue.length > newValue.length) {
-                this.inputData.phone = /\d/.test(oldValue[oldValue.length - 1])
+                const value = /\d/.test(newValue[newValue.length - 1])
                     ? newValue
                     : newValue.substring(0, newValue.length - 1);
-                return /\d/.test(oldValue[oldValue.length - 1])
-                    ? newValue
-                    : newValue.substring(0, newValue.length - 1);
+                this.inputData.phone = value;
+                return value;
             } else {
                 let formated = "";
                 // 123456789012345
