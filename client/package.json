@@ -23,6 +23,7 @@
     "reflect-metadata": "^0.2.2",
     "sass": "^1.77.8",
     "scss": "^0.2.4",
+    "use-long-press": "^3.2.0",
     "vite-plugin-svgr": "^4.2.0",
     "ymap3-components": "^1.1.6"
   },

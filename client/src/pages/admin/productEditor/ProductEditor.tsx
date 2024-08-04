@@ -17,10 +17,7 @@ import { createNotify, NotifyTypes } from "../../../App";
 import Uploader from "../../../modules/Uploader/Uploader";
 import { useParams } from "react-router-dom";
 import InputArea from "../../../modules/InputArea/InputArea";
-import {
-    selections,
-    selectionValue2id,
-} from "../../../common/SelectTransformers";
+import { selections } from "../../../common/SelectTransformers";
 
 interface Props {}
 
@@ -174,7 +171,9 @@ export class ProductEditorViewModel extends ViewModel<unknown, Props> {
     };
 
     handleSelected = (values: string[]) => {
-        this.selectedSizes = values.map((value) => selectionValue2id(value));
+        this.selectedSizes = values.map(
+            (value) => selections.size.getvalue(value)!
+        );
     };
 
     saveChanges = () => {
@@ -276,7 +275,7 @@ const ProductEditor = view(ProductEditorViewModel)<Props>(({ viewModel }) => {
                                         (select) =>
                                             viewModel.sizes.find(
                                                 (element) =>
-                                                    selectionValue2id(
+                                                    selections.size.getvalue(
                                                         element.value
                                                     ) === select
                                             )?.value

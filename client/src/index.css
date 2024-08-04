@@ -18,3 +18,7 @@ body {
 .ant-notification-notice-wrapper {
     text-align: start;
 }
+
+a {
+    color: #a34ef3;
+}

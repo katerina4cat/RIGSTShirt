@@ -26,6 +26,7 @@ export class LoginViewModel extends ViewModel<unknown, Props> {
     @action
     handleInput = (event: React.ChangeEvent<HTMLInputElement>) => {
         this.inputData[event.target.name] = event.target.value;
+        return event.target.value;
     };
     @action
     tryLogin = async () => {

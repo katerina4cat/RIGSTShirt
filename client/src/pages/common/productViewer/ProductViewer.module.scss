@@ -1,64 +1,69 @@
 .ProductViewer {
     display: flex;
-    flex-direction: column;
-    margin: 0.5em 1em;
-    .Title {
-        font-size: 1.5em;
-        font-weight: bolder;
-        padding-bottom: 1em;
-    }
-    .Carousel {
-        height: 35vh;
-        .Image {
-            height: 35vh;
-            object-fit: contain;
-        }
-        margin-bottom: 5vh;
-    }
-    .Description {
-        font-size: 1.1em;
-        flex-grow: 1;
-        text-align: start;
-        white-space: normal;
-        padding-top: 1em;
-        padding-bottom: 2em;
-    }
-    .ThreeElement {
+    justify-content: center;
+    width: 100%;
+    .Box {
         display: flex;
-        justify-content: space-between;
-        .Prices {
-            width: 25%;
+        flex-direction: column;
+        width: 80%;
+        .Title {
+            font-size: 1.5em;
+            font-weight: bolder;
+            padding-bottom: 1em;
+        }
+        .Carousel {
+            height: 35vh;
+            .Image {
+                height: 35vh;
+                object-fit: contain;
+            }
+            margin-bottom: 5vh;
+        }
+        .Description {
+            font-size: 1.1em;
+            flex-grow: 1;
+            text-align: start;
+            white-space: normal;
+            padding-top: 1em;
+            padding-bottom: 2em;
+        }
+        .ThreeElement {
             display: flex;
-            flex-direction: column;
-            font-weight: bold;
-            align-items: center;
-            @media (max-width: 650px) {
-                font-size: 0.8em;
+            justify-content: space-between;
+            .Prices {
+                width: 25%;
+                display: flex;
+                flex-direction: column;
+                font-weight: bold;
+                align-items: center;
+                @media (max-width: 650px) {
+                    font-size: 0.8em;
+                }
+                .Current {
+                    color: #d32326;
+                }
+                .Previous {
+                    color: #777777;
+                    font-size: 0.9em;
+                    padding-left: 0.5em;
+                }
             }
-            .Current {
-                color: #d32326;
+
+            .SelectSize {
+                width: 30%;
+                @media (min-width: 650px) {
+                    width: 15%;
+                }
+                margin: 0 0.75em;
             }
-            .Previous {
-                color: #777777;
-                font-size: 0.9em;
+
+            .AddToCart {
+                width: fit-content;
                 padding-left: 0.5em;
-            }
-        }
-
-        .SelectSize {
-            width: 30%;
-            @media (min-width: 650px) {
-                width: 15%;
-            }
-            margin: 0 0.75em;
-        }
-
-        .AddToCart {
-            width: fit-content;
-            padding-left: 0.5em;
-            .Icon {
-                height: 1.5em;
-                fill: #a6a1aa;
+                .Icon {
+                    height: 1.5em;
+                    fill: #a6a1aa;
+                }
             }
         }
     }

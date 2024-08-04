@@ -1,17 +1,16 @@
 import { ViewModel, view } from "@yoskutik/react-vvm";
 import { makeObservable } from "mobx";
 import cl from "./MapMarker.module.scss";
-import { Point } from "../../common/MapPointerFilter";
 import { YMapMarker } from "ymap3-components";
 import { deliveryTypes } from "../../../../shared/enums";
 import OfficeIcon from "../../icons/office.svg?react";
 
 interface Props {
-    points: Point[];
-    onClick?: (point: Point) => void;
+    geo: [number, number];
+    onClick?: () => void;
     markerType: deliveryTypes;
+    childrens?: number;
     icon?: JSX.Element;
-    zoomIn: (center: [number, number]) => void;
 }
 
 export class MapMarkerViewModel extends ViewModel<unknown, Props> {
@@ -28,33 +27,28 @@ const MarkersClassNames: { [key in deliveryTypes]: string } = {
 };
 
 const MapMarker = view(MapMarkerViewModel)<Props>(({ viewModel }) => {
-    return viewModel.viewProps.points.map((point) => (
+    return (
         <YMapMarker
-            key={point.id}
-            coordinates={[point.lat, point.long]}
+            coordinates={viewModel.viewProps.geo}
             draggable={false}
-            onClick={
-                point.childrens
-                    ? () => viewModel.viewProps.zoomIn([point.lat, point.long])
-                    : viewModel.viewProps.onClick &&
-                      (() => viewModel.viewProps.onClick!(point))
-            }
+            onClick={viewModel.viewProps.onClick}
         >
             <div
                 className={`${
-                    point.childrens === undefined
+                    viewModel.viewProps.childrens === undefined
                         ? cl.PointBorder
                         : cl.PointMany
                 } ${MarkersClassNames[viewModel.viewProps.markerType]}`}
             >
                 <div className={cl.Point}>
-                    {point.childrens || viewModel.viewProps.icon || (
-                        <OfficeIcon className={cl.Icon} />
-                    )}
+                    {viewModel.viewProps.childrens ||
+                        viewModel.viewProps.icon || (
+                            <OfficeIcon className={cl.Icon} />
+                        )}
                 </div>
             </div>
         </YMapMarker>
-    ));
+    );
 });
 
 export default MapMarker;

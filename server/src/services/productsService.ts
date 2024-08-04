@@ -35,4 +35,8 @@ FROM
             };`
         );
     },
+    addSize: async ({ size }: { size: string }) => {
+        await DBManager.query(`INSERT INTO size(title) VALUES("${size}");`);
+        return (await DBManager.query(`SELECT LAST_INSERT_ID() as id`))[0].id;
+    },
 };

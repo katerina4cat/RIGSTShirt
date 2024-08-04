@@ -5,6 +5,7 @@ DROP FUNCTION IF EXISTS getOrderProducts;
 DROP FUNCTION IF EXISTS checkClientSale;
 DROP FUNCTION IF EXISTS checkClientSaleByPhone;
 DROP FUNCTION IF EXISTS getOrderStatus;
+DROP FUNCTION IF EXISTS getOrderDelivery;
 DROP FUNCTION IF EXISTS getClientInfo;
 DROP PROCEDURE IF EXISTS register;
 
@@ -153,4 +154,18 @@ BEGIN
     RETURN result;
 END /
 
+CREATE FUNCTION getOrderDelivery(orderID BIGINT UNSIGNED)
+RETURNS JSON DETERMINISTIC
+BEGIN
+    DECLARE result JSON;
+    SELECT JSON_OBJECT(
+		"id", id,
+		"latitude", latitude,
+		"longitude", longitude,
+		"entrance", entrance,
+		"apartment", apartment,
+		"description", description
+    ) INTO result FROM deliveryInfo WHERE id = orderID LIMIT 1;
+    RETURN result;
+END /
 DELIMITER ;

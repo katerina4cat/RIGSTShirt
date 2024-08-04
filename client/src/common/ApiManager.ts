@@ -197,6 +197,20 @@ export const APIGetSizes = async (ids?: number[]) => {
     }
 };
 
+export const APIGetStatuses = async () => {
+    try {
+        const res = await axios.post(baseURL + "/graphql", {
+            query: `
+{
+  getStatuses
+}`,
+        });
+        return res.data.data.getStatuses;
+    } catch (err) {
+        return { errors: [{ message: "Не удалось подключиться к серверу" }] };
+    }
+};
+
 export const APIEditProduct = async (
     id: number,
     updatedInfo: Partial<IProductInfo>
@@ -283,18 +297,85 @@ mutation{
     }
 };
 
-interface Orders {
+export const APICreateOrderCustom = async (
+    name: string,
+    surname: string,
+    phone: string,
+    email: string,
+    deliveryType: deliveryTypes,
+    geo: [number, number],
+    entrance: string,
+    apartment: string,
+    description: string,
+    lastname?: string
+) => {
+    try {
+        const res = await axios.post(baseURL + "/graphql", {
+            query: `
+mutation{
+  addOrder(
+    cart:[${cartManager.selectedProducts
+        .map(
+            (product) =>
+                `{id: ${product.id}, size: ${product.size}, count: ${product.count}}`
+        )
+        .join(",")}], 
+    user:{
+      name: "${name}"
+      surname: "${surname}"
+      ${lastname ? `lastname: "${lastname}"` : ""}
+      phone: "${phone}"
+      email: "${email}"
+    },
+    delivery: {
+      deliveryType: ${deliveryType}
+      customPoint:{
+        longitude: ${geo[0]}
+        latitude: ${geo[1]}
+        entrance: "${entrance}"
+        apartment: "${apartment}"
+        description: "${description}"
+      }
+    }
+  ){
+    id
+    status
+  }
+}`,
+        });
+        if ("errors" in res.data) return res.data;
+        return res.data.data.addOrder;
+    } catch (err) {
+        return { errors: [{ message: "Не удалось подключиться к серверу" }] };
+    }
+};
+
+export interface Orders {
     id: number;
     client: {
         name: string;
+        surname?: string;
+        lastname?: string;
+        email?: string;
+        sale?: number;
         phone: string;
     };
     deliveryType: deliveryTypes;
     status: string;
-    PVZID: string;
+    PVZID?: string;
+    customDelivery?: {
+        latitude: number;
+        longitude: number;
+        entrance: string;
+        apartment: string;
+        description: string;
+    };
     products: {
+        id?: number;
         count: number;
         price: number;
+        title?: string;
+        size?: string;
     }[];
 }
 
@@ -339,7 +420,75 @@ export const APIGetOrders = async (
         });
         return res.data.data.getOrders as Orders[];
     } catch (err) {
-        console.log(err);
+        return { errors: [{ message: "Не удалось подключиться к серверу" }] };
+    }
+};
+
+export const APIGetOrderInfo = async (orderID: number) => {
+    try {
+        const res = await axios.post(baseURL + "/graphql", {
+            query: `
+{
+  getOrders(filter:{orderID:${orderID}}){
+    id
+    client{
+      name
+      surname
+      lastname
+      phone
+      email
+      sale
+    }
+    deliveryType
+    status
+    PVZID
+    customDelivery{
+      latitude
+      longitude
+      entrance
+      apartment
+      description
+    }
+    products{
+      id
+      title
+      count
+      size
+      price
+    }
+  }
+}`,
+        });
+        return res.data.data.getOrders[0] as Orders;
+    } catch (err) {
+        return { errors: [{ message: "Не удалось подключиться к серверу" }] };
+    }
+};
+
+export const APIChangeOrderStatus = async (orderID: number, status: string) => {
+    try {
+        const res = await axios.post(baseURL + "/graphql", {
+            query: `
+mutation{
+  updateOrder(orderID:${orderID}, status:"${status}")
+}`,
+        });
+        return res.data.data as { updateOrder: boolean };
+    } catch (err) {
+        return { errors: [{ message: "Не удалось подключиться к серверу" }] };
+    }
+};
+
+export const APIAddSize = async (size: string) => {
+    try {
+        const res = await axios.post(baseURL + "/graphql", {
+            query: `
+mutation{
+  addSize(size:"${size}")
+}`,
+        });
+        return res.data.data as { addSize: number };
+    } catch (err) {
         return { errors: [{ message: "Не удалось подключиться к серверу" }] };
     }
 };

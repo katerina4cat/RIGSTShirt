@@ -14,6 +14,7 @@ export interface ClientInfo {
     lastname?: String;
     phone?: String;
     email?: String;
+    sale?: number;
 }
 
 export interface DeliveryInfo {

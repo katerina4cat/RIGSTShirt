@@ -1,9 +1,13 @@
-import { deliveryTypes } from "../../../shared/enums";
+import { delivertTitles, deliveryTypes } from "../../../shared/enums";
 
 interface options {
     label: string;
     value: string;
 }
+
+const selectionValue2id = (value?: string) =>
+    value === undefined ? undefined : Number(value.split("$")[0]);
+
 export const selections = {
     size: {
         options: (sizes?: { id: number; title?: string }[]): options[] =>
@@ -20,22 +24,37 @@ export const selections = {
                       label: size.title || "-",
                       value: `${size.id}$${size.title}`,
                   },
+        getvalue: selectionValue2id,
+    },
+    status: {
+        options: (statuses: string[]): options[] =>
+            statuses.filter(Boolean).map(
+                (status) =>
+                    selections.status.convert2value(status) as {
+                        label: string;
+                        value: string;
+                    }
+            ),
+
+        convert2value: (size?: string) =>
+            size === undefined
+                ? undefined
+                : {
+                      label: size,
+                      value: size,
+                  },
+        getvalue: (value?: string) => value,
+    },
+    delivery: {
+        options: (): options[] =>
+            Object.keys(delivertTitles).map((e) =>
+                selections.delivery.convert2value(Number(e) as deliveryTypes)
+            ),
+
+        convert2value: (deliveryType: deliveryTypes) => ({
+            label: delivertTitles[deliveryType],
+            value: `${deliveryType}$${delivertTitles[deliveryType]}`,
+        }),
+        getvalue: selectionValue2id,
     },
 };
-
-export const selectionValue2id = (value: string) => Number(value.split("$")[0]);
-
-export const selectionDeliverys: options[] = [
-    {
-        label: "СДЕК",
-        value: `${deliveryTypes.CDEK}$СДЕК`,
-    },
-    {
-        label: "Почта России",
-        value: `${deliveryTypes.RUSSIAN_POST}$Почта России`,
-    },
-    {
-        label: "Курьер",
-        value: `${deliveryTypes.CUSTOM_COURIER}$Курьер`,
-    },
-];

@@ -10,10 +10,7 @@ import CartBlock from "../../../modules/CartBlock/CartBlock";
 import { Button, Select } from "antd";
 import CartAddIcon from "../../../icons/shopping-bag-plus.svg?react";
 import cartManager from "../../../common/CartManager";
-import {
-    selections,
-    selectionValue2id,
-} from "../../../common/SelectTransformers";
+import { selections } from "../../../common/SelectTransformers";
 
 interface Props {}
 
@@ -52,7 +49,7 @@ export class ProductViewerViewModel extends ViewModel<unknown, Props> {
     };
 
     addProductToCart = () => {
-        if (this.currentSelect === -1)
+        if (this.currentSelect === undefined)
             return createNotify(
                 "",
                 "Вы не выбрали размер!",
@@ -62,7 +59,7 @@ export class ProductViewerViewModel extends ViewModel<unknown, Props> {
         createNotify("", "Товар добавлен в корзину!", NotifyTypes.SUCCESS);
     };
 
-    currentSelect = -1;
+    currentSelect?: number;
     @observable
     productInfo?: IProductInfo;
     productID = -1;
@@ -71,44 +68,50 @@ const ProductViewer = view(ProductViewerViewModel)<Props>(({ viewModel }) => {
     return (
         <BaseTemplate nav={viewModel.nav} backUrl="/">
             <div className={cl.ProductViewer}>
-                <div className={cl.Title}>{viewModel.productInfo?.title}</div>
-                <ImageSlider
-                    productID={viewModel.productInfo?.id}
-                    className={cl.Carousel}
-                    imageClassName={cl.Image}
-                />
-                <div className={cl.Description}>
-                    {viewModel.productInfo?.description}
-                </div>
-                <div className={cl.ThreeElement}>
-                    <div className={cl.Prices}>
-                        <div className={cl.Current}>
-                            {viewModel.productInfo?.price.toLocaleString()} ₽
-                        </div>
-                        {viewModel.productInfo?.showSale ? (
-                            <del className={cl.Previous}>
-                                {viewModel.productInfo?.previousPrice?.toLocaleString()}{" "}
-                                ₽
-                            </del>
-                        ) : null}
+                <div className={cl.Box}>
+                    <div className={cl.Title}>
+                        {viewModel.productInfo?.title}
                     </div>
-                    <Select
-                        onChange={(value) =>
-                            (viewModel.currentSelect = selectionValue2id(value))
-                        }
-                        className={cl.SelectSize}
-                        placeholder="Размер"
-                        options={selections.size.options(
-                            viewModel.productInfo?.sizes
-                        )}
+                    <ImageSlider
+                        productID={viewModel.productInfo?.id}
+                        className={cl.Carousel}
+                        imageClassName={cl.Image}
                     />
-                    <Button
-                        icon={<CartAddIcon className={cl.Icon} />}
-                        className={cl.AddToCart}
-                        onClick={viewModel.addProductToCart}
-                    >
-                        В корзину
-                    </Button>
+                    <div className={cl.Description}>
+                        {viewModel.productInfo?.description}
+                    </div>
+                    <div className={cl.ThreeElement}>
+                        <div className={cl.Prices}>
+                            <div className={cl.Current}>
+                                {viewModel.productInfo?.price.toLocaleString()}{" "}
+                                ₽
+                            </div>
+                            {viewModel.productInfo?.showSale ? (
+                                <del className={cl.Previous}>
+                                    {viewModel.productInfo?.previousPrice?.toLocaleString()}{" "}
+                                    ₽
+                                </del>
+                            ) : null}
+                        </div>
+                        <Select
+                            onChange={(value) =>
+                                (viewModel.currentSelect =
+                                    selections.size.getvalue(value))
+                            }
+                            className={cl.SelectSize}
+                            placeholder="Размер"
+                            options={selections.size.options(
+                                viewModel.productInfo?.sizes
+                            )}
+                        />
+                        <Button
+                            icon={<CartAddIcon className={cl.Icon} />}
+                            className={cl.AddToCart}
+                            onClick={viewModel.addProductToCart}
+                        >
+                            В корзину
+                        </Button>
+                    </div>
                 </div>
                 <CartBlock nav={viewModel.nav} />
             </div>

@@ -1,14 +1,19 @@
 import { ViewModel, view } from "@yoskutik/react-vvm";
-import { makeObservable, observable, runInAction } from "mobx";
+import { action, makeObservable, observable, runInAction } from "mobx";
 import cl from "./OrderList.module.scss";
 import BaseTemplate from "../../../modules/PageTemplate/BaseTemplate";
-import { Button, Table, TableColumnsType } from "antd";
+import { Button, Select, Table, TableColumnsType } from "antd";
 import FilterIcon from "../../../icons/filter.svg?react";
 import FilterClearIcon from "../../../icons/clear-filter.svg?react";
 import { delivertTitles, deliveryTypes } from "../../../../../shared/enums";
-import { APIAccessTest, APIGetOrders } from "../../../common/ApiManager";
+import {
+    APIAccessTest,
+    APIGetOrders,
+    APIGetStatuses,
+} from "../../../common/ApiManager";
 import { createNotify, NotifyTypes } from "../../../App";
 import Loading from "../../../modules/PageTemplate/Loading";
+import { selections } from "../../../common/SelectTransformers";
 
 interface Props {}
 const columns: TableColumnsType<DataTable> = [
@@ -59,6 +64,12 @@ export class OrderListViewModel extends ViewModel<unknown, Props> {
     @observable
     loading = true;
     @observable
+    statuses: string[] = [];
+    @observable
+    currentStatus: any = undefined;
+    @observable
+    currentDeliveryType: any = undefined;
+    @observable
     data: DataTable[] = [];
     nav = { navigate: (to: string) => {} };
 
@@ -73,11 +84,26 @@ export class OrderListViewModel extends ViewModel<unknown, Props> {
             );
             return;
         }
+        APIGetStatuses().then(
+            action((res) => {
+                if (!("errors" in res)) this.statuses = res;
+            })
+        );
         this.loading = false;
         this.loadData();
     };
 
     loadData = async (orderStatus?: string, deliveryType?: deliveryTypes) => {
+        runInAction(() => {
+            this.currentStatus =
+                orderStatus === undefined
+                    ? orderStatus
+                    : selections.status.convert2value(orderStatus);
+            this.currentDeliveryType =
+                deliveryType === undefined
+                    ? deliveryType
+                    : selections.delivery.convert2value(deliveryType);
+        });
         const res = await APIGetOrders({
             orderStatus: orderStatus ? `"${orderStatus}"` : undefined,
             deliveryType: deliveryType,
@@ -105,6 +131,7 @@ export class OrderListViewModel extends ViewModel<unknown, Props> {
         });
     };
 }
+
 const OrderList = view(OrderListViewModel)<Props>(({ viewModel }) => {
     return (
         <BaseTemplate backUrl="/admin/menu" nav={viewModel.nav} logout>
@@ -113,33 +140,42 @@ const OrderList = view(OrderListViewModel)<Props>(({ viewModel }) => {
                     <h1>Список заказов</h1>
                     <div className={cl.FilterList}>
                         <Button
-                            className={cl.FilterBtn}
+                            className={`${cl.FilterBtn} ${cl.FilterElement}`}
                             style={{ aspectRatio: 1, padding: "0.1em" }}
                             onClick={() => viewModel.loadData()}
                         >
                             <FilterClearIcon className={cl.Icon} />
                         </Button>
-                        <Button
-                            className={cl.FilterBtn}
-                            icon={<FilterIcon className={cl.Icon} />}
-                            onClick={() => viewModel.loadData("Поступил")}
-                        >
-                            Поступил
-                        </Button>
-                        <Button
-                            className={cl.FilterBtn}
-                            icon={<FilterIcon className={cl.Icon} />}
-                            onClick={() => viewModel.loadData("На сборке")}
-                        >
-                            На сборке
-                        </Button>
-                        <Button
-                            className={cl.FilterBtn}
-                            icon={<FilterIcon className={cl.Icon} />}
-                            onClick={() => viewModel.loadData("Отправлен")}
-                        >
-                            Отправлен
-                        </Button>
+                        <Select
+                            options={selections.status.options(
+                                viewModel.statuses
+                            )}
+                            className={cl.FilterElement}
+                            value={viewModel.currentStatus}
+                            placeholder="Статус заказа"
+                            onChange={(e) => {
+                                viewModel.loadData(
+                                    e,
+                                    selections.delivery.getvalue(
+                                        viewModel.currentDeliveryType?.value
+                                    )
+                                );
+                            }}
+                        />
+                        <Select
+                            options={selections.delivery.options()}
+                            className={cl.FilterElement}
+                            value={viewModel.currentDeliveryType}
+                            placeholder="Тип доставки"
+                            onChange={(e) => {
+                                viewModel.loadData(
+                                    selections.status.getvalue(
+                                        viewModel.currentStatus?.value
+                                    ),
+                                    selections.delivery.getvalue(e)
+                                );
+                            }}
+                        />
                     </div>
                     <Table
                         columns={columns}

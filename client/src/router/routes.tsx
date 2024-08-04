@@ -8,6 +8,8 @@ import Cart from "../pages/common/cart/Cart";
 import CreatingOrder from "../pages/common/creatingOrder/CreatingOrder";
 import ProductList from "../pages/admin/productList/ProductList";
 import OrderList from "../pages/admin/orderList/OrderList";
+import OrderInfo from "../pages/admin/orderInfo/OrderInfo";
+import Sizes from "../pages/admin/sizes/Sizes";
 
 export const roots: RouteObject[] = [
     {
@@ -22,8 +24,16 @@ export const roots: RouteObject[] = [
                 element: <Menu />,
             },
             {
+                path: "sizes",
+                element: <Sizes />,
+            },
+            {
                 path: "orders",
                 element: <OrderList />,
+            },
+            {
+                path: "order/:id",
+                element: <OrderInfo />,
             },
             {
                 path: "list",

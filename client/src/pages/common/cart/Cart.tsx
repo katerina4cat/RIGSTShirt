@@ -8,10 +8,7 @@ import {
 } from "../../../common/ApiManager";
 import cartManager from "../../../common/CartManager";
 import { Button, Select } from "antd";
-import {
-    selections,
-    selectionValue2id,
-} from "../../../common/SelectTransformers";
+import { selections } from "../../../common/SelectTransformers";
 import { createNotify, NotifyTypes } from "../../../App";
 
 interface Props {}
@@ -139,7 +136,7 @@ const Cart = view(CartViewModel)<Props>(({ viewModel }) => {
                                             viewModel.changeSize(
                                                 product.id,
                                                 cartRawProduct.size,
-                                                selectionValue2id(value)
+                                                selections.size.getvalue(value)!
                                             )
                                         }
                                     />

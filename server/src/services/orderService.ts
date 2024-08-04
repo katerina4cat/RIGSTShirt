@@ -1,3 +1,4 @@
+import { IContext } from "app";
 import DBManager from "database/DBManager";
 import { IClientInfo, IOrderInfo } from "database/interfaces";
 import { ApiError } from "exceptions/errorService";
@@ -8,6 +9,8 @@ import {
     OrderFilterInput,
     UserInfoInput,
 } from "graphql/models";
+import tokenService from "./tokenService";
+import { newOrderInfo } from "common/EmailSender";
 
 abstract class userUUID {
     uuid!: string;
@@ -52,26 +55,24 @@ export const orderService = {
             if (!client)
                 return ApiError.BadRequest("Указан неверный uuid пользователя");
         } else {
-            try {
-                await DBManager.query(`INSERT INTO clientInfo(name, surname${
-                    user.lastname && `, lastname`
-                }, phone, email)
+            await DBManager.query(`INSERT INTO clientInfo(name, surname${
+                user.lastname ? `, lastname` : ""
+            }, phone, email)
                 VALUES("${user.name}", "${user.surname}"${
-                    user.lastname && `, "${user.lastname}"`
-                }, "${user.phone}", "${user.email}");`);
-            } catch {}
+                user.lastname ? `, "${user.lastname}"` : ""
+            }, ${user.phone}, "${user.email}");`);
             client = (
                 await DBManager.query<IClientInfo>(
-                    `SELECT * FROM clientInfo WHERE phone = ${user.phone} LIMIT 1;`
+                    `SELECT * FROM clientInfo WHERE id = LAST_INSERT_ID() LIMIT 1;`
                 )
             )[0];
         }
         // Создание нового заказа
         await DBManager.query(`INSERT INTO \`order\`(deliveryType, ${
-            delivery.PVZID && `PVZID,`
+            delivery.PVZID ? `PVZID,` : ""
         } clientID)
             VALUES(${delivery.deliveryType}, ${
-            delivery.PVZID && `"${delivery.PVZID}",`
+            delivery.PVZID ? `"${delivery.PVZID}",` : ""
         } ${client.id});`);
         // Получение ID созданного заказа
         const orderID: number = (
@@ -91,13 +92,16 @@ export const orderService = {
         // Запись адреса доставки до двери
         if (delivery.customPoint)
             await DBManager.query(
-                `INSERT INTO deliveryInfo(latitude, longitude, entrance, apartment, description) VALUES(${delivery.customPoint.latitude},${delivery.customPoint.longitude},"${delivery.customPoint.entrance}","${delivery.customPoint.apartment}","${delivery.customPoint.description}");`
+                `INSERT INTO deliveryInfo(id,latitude, longitude, entrance, apartment, description) VALUES(${orderID},${delivery.customPoint.latitude},${delivery.customPoint.longitude},"${delivery.customPoint.entrance}","${delivery.customPoint.apartment}","${delivery.customPoint.description}");`
             );
+        DBManager.connection.commit();
+
         const res = await orderService.getOrders({
             filter: { orderID: orderID },
         });
         if (res instanceof ApiError) return res;
 
+        newOrderInfo(res[0]);
         return res[0];
     },
     getOrders: async ({
@@ -110,6 +114,7 @@ export const orderService = {
         \`order\`.id,
         \`order\`.deliveryType,
         \`order\`.PVZID,
+        getOrderDelivery(\`order\`.id) as customDelivery,
         getOrderProducts(\`order\`.id, \`order\`.createdAt) as products,
         getOrderStatus(\`order\`.id) as status,
         getClientInfo(\`order\`.clientID) as client
@@ -125,6 +130,38 @@ export const orderService = {
             if (filters.length) query += ` WHERE ${filters.join(" AND ")}`;
             const result = await DBManager.query<IOrderInfo>(query + ";");
             return result || [];
+        } catch (err) {
+            return ApiError.RuntimeError("Произошла ошибка");
+        }
+    },
+    getStatuses: async (): Promise<string[] | ApiError> => {
+        try {
+            const res = await DBManager.query(
+                `SELECT statusList.title FROM statusList;`
+            );
+            return res.map((status) => status.title) || [];
+        } catch (err) {
+            return ApiError.RuntimeError("Произошла ошибка");
+        }
+    },
+    updateOrder: async (
+        {
+            orderID,
+            status,
+        }: {
+            orderID: number;
+            status: string;
+        },
+        context: IContext
+    ) => {
+        try {
+            const payload = await tokenService.validateAcessToken(context);
+            if (payload instanceof ApiError) return payload;
+            await DBManager.query(
+                `INSERT INTO statusHistory(orderID, workerID, statusID) VALUES (${orderID}, ${payload.id}, (SELECT id FROM statusList WHERE title="${status}"));`
+            );
+            DBManager.connection.commit();
+            return true;
         } catch (err) {
             return ApiError.RuntimeError("Произошла ошибка");
         }

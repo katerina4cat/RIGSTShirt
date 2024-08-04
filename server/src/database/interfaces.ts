@@ -35,12 +35,19 @@ export interface IClientInfo extends RowDataPacket {
     lastname?: string;
     phone: number;
     email: string;
-    sale: boolean;
+    sale: number;
 }
 
 export interface IOrderInfo extends RowDataPacket {
     client: ClientInfo;
     deliveryType: number;
+    customDelivery?: {
+        latitude: number;
+        longitude: number;
+        entrance: string;
+        apartment: string;
+        description: string;
+    };
     status: string;
     PVZID?: String;
     products: OrderProduct[];

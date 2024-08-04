@@ -32,6 +32,7 @@ type OrderInfo {
     deliveryType: Int!
     status: String!
     PVZID: String
+    customDelivery: DeliveryInfo
     products: [OrderProduct!]!
 }
 

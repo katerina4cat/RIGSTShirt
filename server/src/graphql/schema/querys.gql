@@ -8,6 +8,8 @@ type Mutation {
         user: UserInfoInput!
         delivery: DeliveryInput!
     ): OrderInfo
+    updateOrder(orderID: Int!, status: String!): Boolean!
+    addSize(size: String!): Int!
 }
 type Query {
     getProducts(id: Int, showDeleted: Boolean, ids: [Int!]): [Product]
@@ -20,4 +22,5 @@ type Query {
 
     orderSales(phone: String!): Float!
     getOrders(filter: OrderFilterInput): [OrderInfo]!
+    getStatuses: [String]!
 }

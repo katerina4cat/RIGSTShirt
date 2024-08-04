@@ -7,11 +7,13 @@
         width: 90%;
         display: flex;
         overflow-x: auto;
+        .FilterElement {
+            margin: 0 0.5em;
+        }
         .FilterBtn {
             padding: 0.5em;
             font-size: 0.9em;
             font-weight: bold;
-            margin: 0 0.75em;
             .Icon {
                 height: 1.5em;
                 fill: #a6a1aa;

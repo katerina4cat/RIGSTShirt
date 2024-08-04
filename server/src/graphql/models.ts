@@ -41,7 +41,7 @@ export interface CustomPointInput {
     longitude: number;
     entrance: string;
     apartment: string;
-    description?: string;
+    description: string;
 }
 
 export interface OrderFilterInput {
