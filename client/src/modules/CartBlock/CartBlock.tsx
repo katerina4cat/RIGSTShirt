@@ -3,10 +3,9 @@ import { makeObservable } from "mobx";
 import cl from "./CartBlock.module.scss";
 import CartIcon from "../../icons/shopping-bag.svg?react";
 import cartManager from "../../common/CartManager";
+import { navigate } from "../../App";
 
-interface Props {
-    nav: { navigate: (to: string) => void };
-}
+interface Props {}
 
 export class CartBlockViewModel extends ViewModel<unknown, Props> {
     constructor() {
@@ -17,10 +16,7 @@ export class CartBlockViewModel extends ViewModel<unknown, Props> {
 const CartBlock = view(CartBlockViewModel)<Props>(({ viewModel }) => {
     if (cartManager.selectedProducts.length === 0) return null;
     return (
-        <div
-            className={cl.Cart}
-            onClick={() => viewModel.viewProps.nav.navigate("/cart")}
-        >
+        <div className={cl.Cart} onClick={() => navigate.current("/cart")}>
             <CartIcon className={cl.Icon} />
             <div className={cl.Count}>
                 {cartManager.selectedProducts.length}

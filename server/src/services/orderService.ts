@@ -104,12 +104,20 @@ export const orderService = {
         newOrderInfo(res[0]);
         return res[0];
     },
-    getOrders: async ({
-        filter,
-    }: {
-        filter?: OrderFilterInput;
-    }): Promise<IOrderInfo[] | ApiError> => {
+    getOrders: async (
+        {
+            filter,
+        }: {
+            filter?: OrderFilterInput;
+        },
+        context?: IContext
+    ): Promise<IOrderInfo[] | ApiError> => {
         try {
+            if (filter?.orderID === undefined) {
+                if (context === undefined) return ApiError.UnauthorizedError();
+                const payload = await tokenService.validateAcessToken(context);
+                if (payload instanceof ApiError) return payload;
+            }
             let query = `SELECT 
         \`order\`.id,
         \`order\`.deliveryType,

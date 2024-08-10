@@ -5,17 +5,41 @@ import { createNotify, NotifyTypes } from "../App";
 
 export const getAdressByCoords = async (geo: [number, number]) => {
     try {
-        const res = (
-            await axios.get(
-                `https://geocode-maps.yandex.ru/1.x/?apikey=ba8d9899-bf4c-4afe-83be-87c06bf8f529&geocode=${geo.join(
-                    ","
-                )}&format=json`
-            )
-        ).data.response.GeoObjectCollection.featureMember;
-        return (
-            res[0].GeoObject.metaDataProperty.GeocoderMetaData.Address
-                .formatted || "Не удалось определить адрес!"
+        const promise = new Promise<string>((resolve) =>
+            caches.open("geoAdess").then(async (cache) => {
+                let cashedValue = await cache.match(
+                    `https://geocode-maps.yandex.ru/1.x/?apikey=ba8d9899-bf4c-4afe-83be-87c06bf8f529&geocode=${geo.join(
+                        ","
+                    )}&format=json`
+                );
+                if (!cashedValue) {
+                    await cache.add(
+                        `https://geocode-maps.yandex.ru/1.x/?apikey=ba8d9899-bf4c-4afe-83be-87c06bf8f529&geocode=${geo.join(
+                            ","
+                        )}&format=json`
+                    );
+                    console.log("Новый адресс кэширован!");
+                    cashedValue = await cache.match(
+                        `https://geocode-maps.yandex.ru/1.x/?apikey=ba8d9899-bf4c-4afe-83be-87c06bf8f529&geocode=${geo.join(
+                            ","
+                        )}&format=json`
+                    );
+                } else {
+                    console.log("Уже кешированно!");
+                }
+                const res = (await cashedValue!.json()).response
+                    .GeoObjectCollection.featureMember;
+                if (
+                    res[0].GeoObject.metaDataProperty.GeocoderMetaData.Address
+                        .formatted
+                )
+                    resolve(
+                        res[0].GeoObject.metaDataProperty.GeocoderMetaData
+                            .Address.formatted || "Не удалось определить адрес!"
+                    );
+            })
         );
+        return await promise;
     } catch {
         return "Не удалось определить адрес!";
     }

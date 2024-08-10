@@ -4,7 +4,7 @@ import BaseTemplate from "../../../modules/PageTemplate/BaseTemplate";
 import cl from "./Main.module.scss";
 import ProductElement from "../../../modules/ProductElement/ProductElement";
 import { APIGetProductsInfo, IProductInfo } from "../../../common/ApiManager";
-import { createNotify, NotifyTypes } from "../../../App";
+import { createNotify, navigate, NotifyTypes } from "../../../App";
 import CartBlock from "../../../modules/CartBlock/CartBlock";
 
 interface Props {}
@@ -16,7 +16,6 @@ export class MainViewModel extends ViewModel<unknown, Props> {
         this.loadProducts();
         this.calculateAspect();
     }
-    nav = { navigate: (to: string) => {} };
     loadProducts = async (deepth = 1): Promise<void> => {
         const res = await APIGetProductsInfo();
         if (res.errors !== undefined) {
@@ -48,12 +47,12 @@ export class MainViewModel extends ViewModel<unknown, Props> {
         this.aspectRatio = window.innerWidth / window.innerHeight;
     };
     goToProduct = (id: number) => {
-        this.nav?.navigate("/product/" + id);
+        navigate.current("/product/" + id);
     };
 }
 const Main = view(MainViewModel)<Props>(({ viewModel }) => {
     return (
-        <BaseTemplate nav={viewModel.nav}>
+        <BaseTemplate>
             <div className={cl.Main}>
                 <div className={cl.PreviewScreen}>
                     {viewModel.aspectRatio < 0.677 ? (
@@ -92,7 +91,7 @@ const Main = view(MainViewModel)<Props>(({ viewModel }) => {
                         />
                     ))}
                 </div>
-                <CartBlock nav={viewModel.nav!} />
+                <CartBlock />
             </div>
         </BaseTemplate>
     );

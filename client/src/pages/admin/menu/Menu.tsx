@@ -2,38 +2,19 @@ import { ViewModel, view } from "@yoskutik/react-vvm";
 import { action, makeObservable, observable } from "mobx";
 import cl from "./Menu.module.scss";
 import { Button, Modal } from "antd";
-import { APIAccessTest } from "../../../common/ApiManager";
 import BaseTemplate from "../../../modules/PageTemplate/BaseTemplate";
 import Loading from "../../../modules/PageTemplate/Loading";
-import { createNotify, NotifyTypes } from "../../../App";
 import Input from "../../../modules/Input/Input";
+import { navigate } from "../../../App";
 
 interface Props {}
 
 export class MenuViewModel extends ViewModel<unknown, Props> {
-    nav = { navigate: (to: string) => {} };
-
     constructor() {
         super();
-        this.authCheck();
         makeObservable(this);
     }
 
-    @action
-    authCheck = async () => {
-        if (!(await APIAccessTest())) {
-            this.nav.navigate("/admin/login");
-            createNotify(
-                "Авторизация",
-                "Для открытия данной страницы необходима авторизация!",
-                NotifyTypes.ERROR,
-                3
-            );
-        }
-        this.loading = false;
-    };
-    @observable
-    loading = true;
     @observable
     modal = false;
     @observable
@@ -53,24 +34,20 @@ export class MenuViewModel extends ViewModel<unknown, Props> {
 }
 const Menu = view(MenuViewModel)<Props>(({ viewModel }) => {
     return (
-        <BaseTemplate logout nav={viewModel.nav}>
-            <Loading loading={viewModel.loading}>
+        <BaseTemplate logout admin>
+            <Loading needAuth>
                 <div className={cl.Menu}>
                     <h1>Меню</h1>
                     <div className={cl.FunctionList}>
                         <Button
                             className={cl.FunctionButton}
-                            onClick={() =>
-                                viewModel.nav.navigate("/admin/list")
-                            }
+                            onClick={() => navigate.current("/admin/list")}
                         >
                             Изменение/добавление товаров
                         </Button>
                         <Button
                             className={cl.FunctionButton}
-                            onClick={() =>
-                                viewModel.nav.navigate("/admin/orders")
-                            }
+                            onClick={() => navigate.current("/admin/orders")}
                         >
                             Заказы
                         </Button>
@@ -85,7 +62,7 @@ const Menu = view(MenuViewModel)<Props>(({ viewModel }) => {
                         <Button
                             className={cl.FunctionButton}
                             onClick={() => {
-                                viewModel.nav.navigate("/admin/sizes");
+                                navigate.current("/admin/sizes");
                             }}
                         >
                             Редактор размеров
@@ -97,7 +74,7 @@ const Menu = view(MenuViewModel)<Props>(({ viewModel }) => {
                             viewModel.modal = false;
                         })}
                         onOk={() =>
-                            viewModel.nav.navigate(
+                            navigate.current(
                                 "/admin/order/" + viewModel.inputData.orderID
                             )
                         }

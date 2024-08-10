@@ -94,7 +94,8 @@ export const productEditorServices = {
         },
         context: IContext
     ): Promise<Boolean | ApiError> => {
-        await tokenService.validateAcessToken(context);
+        const payload = await tokenService.validateAcessToken(context);
+        if (payload instanceof ApiError) return payload;
         await DBManager.query(
             `UPDATE product SET deleted=${recovery ? 0 : 1} WHERE id=${id};`
         );

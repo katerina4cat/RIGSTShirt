@@ -13,7 +13,7 @@ import {
 } from "../../../common/ApiManager";
 import BaseTemplate from "../../../modules/PageTemplate/BaseTemplate";
 import Loading from "../../../modules/PageTemplate/Loading";
-import { createNotify, NotifyTypes } from "../../../App";
+import { createNotify, navigate, NotifyTypes } from "../../../App";
 import Uploader from "../../../modules/Uploader/Uploader";
 import { useParams } from "react-router-dom";
 import InputArea from "../../../modules/InputArea/InputArea";
@@ -24,7 +24,6 @@ interface Props {}
 type InputsNames = "title" | "description" | "price";
 
 export class ProductEditorViewModel extends ViewModel<unknown, Props> {
-    nav = { navigate: (to: string) => {} };
     constructor() {
         super();
         makeObservable(this);
@@ -62,16 +61,6 @@ export class ProductEditorViewModel extends ViewModel<unknown, Props> {
     };
     @action
     loadServerData = async () => {
-        if (!(await APIAccessTest())) {
-            this.nav.navigate("/admin/login");
-            createNotify(
-                "Авторизация",
-                "Для открытия данной страницы необходима авторизация!",
-                NotifyTypes.ERROR,
-                3
-            );
-            return;
-        }
         if (this.productID === undefined) {
             const res = await APICreateNewProduct();
             if (res.errors !== undefined) {
@@ -90,7 +79,7 @@ export class ProductEditorViewModel extends ViewModel<unknown, Props> {
                     )
                 );
                 setTimeout(() => {
-                    this.nav.navigate("/admin/menu");
+                    navigate.current("/admin/menu");
                 }, 2500);
                 return;
             }
@@ -102,11 +91,11 @@ export class ProductEditorViewModel extends ViewModel<unknown, Props> {
                     3
                 );
                 setTimeout(() => {
-                    this.nav.navigate("/admin/menu");
+                    navigate.current("/admin/menu");
                 }, 2500);
                 return;
             }
-            this.nav.navigate("/admin/edit/" + res);
+            navigate.current("/admin/edit/" + res);
             this.productID = res;
         }
         const res = await APIGetProductInfo(this.productID, true);
@@ -126,7 +115,7 @@ export class ProductEditorViewModel extends ViewModel<unknown, Props> {
                 )
             );
             setTimeout(() => {
-                this.nav.navigate("/admin/menu");
+                navigate.current("/admin/menu");
             }, 2500);
             return;
         }
@@ -241,8 +230,8 @@ export class ProductEditorViewModel extends ViewModel<unknown, Props> {
 }
 const ProductEditor = view(ProductEditorViewModel)<Props>(({ viewModel }) => {
     return (
-        <BaseTemplate backUrl="/admin/list" logout nav={viewModel.nav}>
-            <Loading loading={viewModel.loading}>
+        <BaseTemplate logout back admin>
+            <Loading loading={viewModel.loading} needAuth>
                 <div className={cl.ProductEditor}>
                     <div className={cl.EditorBox}>
                         <h3>Добавление/редактирование товара</h3>

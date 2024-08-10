@@ -2,6 +2,7 @@ import { mediaPath } from "app";
 import { ApiError } from "exceptions/errorService";
 import { NextFunction, Request, Response } from "express";
 import fs from "fs";
+import tokenService from "./tokenService";
 
 export const pictureService = {
     getProductFileList: async (
@@ -27,6 +28,11 @@ export const pictureService = {
         next: NextFunction
     ) => {
         try {
+            const payload = await tokenService.validateAcessToken({
+                req: req,
+                res: res,
+            });
+            if (payload instanceof ApiError) return payload;
             const product = req.query.p;
             const ext = req.query.ext || "png";
             if (product === undefined)
@@ -66,6 +72,11 @@ export const pictureService = {
         next: NextFunction
     ) => {
         try {
+            const payload = await tokenService.validateAcessToken({
+                req: req,
+                res: res,
+            });
+            if (payload instanceof ApiError) return payload;
             const product = req.query.p;
             const picture = req.query.img;
             if (product === undefined || picture === undefined) {

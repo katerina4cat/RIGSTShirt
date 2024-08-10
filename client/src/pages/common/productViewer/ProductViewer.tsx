@@ -4,7 +4,7 @@ import cl from "./ProductViewer.module.scss";
 import BaseTemplate from "../../../modules/PageTemplate/BaseTemplate";
 import { useParams } from "react-router-dom";
 import { APIGetProductInfo, IProductInfo } from "../../../common/ApiManager";
-import { createNotify, NotifyTypes } from "../../../App";
+import { createNotify, navigate, NotifyTypes } from "../../../App";
 import ImageSlider from "../../../modules/ImageSlider/ImageSlider";
 import CartBlock from "../../../modules/CartBlock/CartBlock";
 import { Button, Select } from "antd";
@@ -15,7 +15,6 @@ import { selections } from "../../../common/SelectTransformers";
 interface Props {}
 
 export class ProductViewerViewModel extends ViewModel<unknown, Props> {
-    nav = { navigate: (to: string) => {} };
     constructor() {
         super();
         makeObservable(this);
@@ -23,7 +22,7 @@ export class ProductViewerViewModel extends ViewModel<unknown, Props> {
         const { id } = useParams();
         if (id !== undefined && /^\d+$/.test(id)) this.productID = Number(id);
         if (this.productID == -1) {
-            setTimeout(() => this.nav?.navigate("/"), 500);
+            setTimeout(() => navigate.current("/"), 500);
             createNotify("", "Товар не найден", NotifyTypes.ERROR, 2);
         }
         this.loadProductData();
@@ -33,7 +32,7 @@ export class ProductViewerViewModel extends ViewModel<unknown, Props> {
         const res = await APIGetProductInfo(this.productID, undefined, true);
         if (res.errors !== undefined) {
             if (deepth >= 3) {
-                setTimeout(() => this.nav?.navigate("/"), 2000);
+                setTimeout(() => navigate.current("/"), 2000);
                 return createNotify(
                     "",
                     "Произошла ошибка при загрузке товара",
@@ -66,7 +65,7 @@ export class ProductViewerViewModel extends ViewModel<unknown, Props> {
 }
 const ProductViewer = view(ProductViewerViewModel)<Props>(({ viewModel }) => {
     return (
-        <BaseTemplate nav={viewModel.nav} backUrl="/">
+        <BaseTemplate back>
             <div className={cl.ProductViewer}>
                 <div className={cl.Box}>
                     <div className={cl.Title}>
@@ -113,7 +112,7 @@ const ProductViewer = view(ProductViewerViewModel)<Props>(({ viewModel }) => {
                         </Button>
                     </div>
                 </div>
-                <CartBlock nav={viewModel.nav} />
+                <CartBlock />
             </div>
         </BaseTemplate>
     );

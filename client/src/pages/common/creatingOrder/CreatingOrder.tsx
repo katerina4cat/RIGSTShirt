@@ -13,7 +13,7 @@ import { Button, Select } from "antd";
 import { selections } from "../../../common/SelectTransformers";
 import { deliveryTypes } from "../../../../../shared/enums";
 import { Point } from "../../../common/MapPointerFilter";
-import { createNotify, NotifyTypes } from "../../../App";
+import { createNotify, navigate, NotifyTypes } from "../../../App";
 import cartManager from "../../../common/CartManager";
 import {
     APICreateOrder,
@@ -43,7 +43,6 @@ interface InputCheck {
 }
 
 export class CreatingOrderViewModel extends ViewModel<unknown, Props> {
-    nav = { navigate: (to: string) => {} };
     tryCreateOrder = async () => {
         const checkResult: InputCheck[] = [
             {
@@ -155,7 +154,7 @@ export class CreatingOrderViewModel extends ViewModel<unknown, Props> {
             }
         }
         cartManager.clearCart();
-        this.nav.navigate("/");
+        navigate.current("/");
         const splice = (base: string, idx: number, rem: number, str: string) =>
             base.slice(0, idx) + str + base.slice(idx + Math.abs(rem));
         createNotify(
@@ -277,7 +276,7 @@ export class CreatingOrderViewModel extends ViewModel<unknown, Props> {
 }
 const CreatingOrder = view(CreatingOrderViewModel)<Props>(({ viewModel }) => {
     return (
-        <BaseTemplate backUrl="/cart" nav={viewModel.nav}>
+        <BaseTemplate back>
             <div className={cl.CreatingOrder}>
                 <h3>Оформление заказа</h3>
                 <div className={cl.DataBox}>

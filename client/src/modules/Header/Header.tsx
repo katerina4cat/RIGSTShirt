@@ -3,21 +3,22 @@ import { makeObservable } from "mobx";
 import cl from "./Header.module.scss";
 import LogOutIcon from "../../icons/logout.svg?react";
 import BackIcon from "../../icons/back.svg?react";
-import { NavigateMVVM } from "../../router/NavigateMVVM";
 import { APILogOut } from "../../common/ApiManager";
-import { createNotify, NotifyTypes } from "../../App";
+import { createNotify, navigate, NotifyTypes } from "../../App";
 
 interface Props {
-    backUrl?: string;
+    back?: boolean;
     logout?: boolean;
+    admin?: boolean;
 }
 
 export class HeaderViewModel extends ViewModel<unknown, Props> {
-    nav = new NavigateMVVM();
     constructor() {
         super();
         makeObservable(this);
     }
+
+    back = () => navigate.current(-1);
     logout = async () => {
         const res = await APILogOut();
         if ("errors" in res) {
@@ -32,7 +33,7 @@ export class HeaderViewModel extends ViewModel<unknown, Props> {
             return;
         }
         if (res.data?.logout) {
-            this.nav.navigate("/admin/login");
+            navigate.current("/admin/login");
             createNotify(
                 "Авторизация",
                 "Вы успешно вышли из аккаунту",
@@ -45,19 +46,11 @@ export class HeaderViewModel extends ViewModel<unknown, Props> {
 const Header = view(HeaderViewModel)<Props>(({ viewModel }) => {
     return (
         <header className={cl.Header}>
-            {viewModel.nav.Navigator}
             <div
                 className={cl.BackBox}
-                onClick={
-                    viewModel.viewProps.backUrl
-                        ? () =>
-                              viewModel.nav.navigate(
-                                  viewModel.viewProps.backUrl!
-                              )
-                        : undefined
-                }
+                onClick={viewModel.viewProps.back ? viewModel.back : undefined}
             >
-                {viewModel.viewProps.backUrl && (
+                {viewModel.viewProps.back && (
                     <>
                         <BackIcon className={cl.BackIcon} />
                         <div className={cl.BackTitle}>Назад</div>
@@ -69,7 +62,11 @@ const Header = view(HeaderViewModel)<Props>(({ viewModel }) => {
                     src="/logo/logo.png"
                     alt="RIGS"
                     className={cl.LogoImage}
-                    onClick={() => viewModel.nav.navigate("/")}
+                    onClick={() =>
+                        navigate.current(
+                            viewModel.viewProps.admin ? "/admin/menu" : "/"
+                        )
+                    }
                     draggable="false"
                 />
             </div>

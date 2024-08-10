@@ -3,15 +3,10 @@ import { action, makeObservable, observable, runInAction } from "mobx";
 import cl from "./OrderList.module.scss";
 import BaseTemplate from "../../../modules/PageTemplate/BaseTemplate";
 import { Button, Select, Table, TableColumnsType } from "antd";
-import FilterIcon from "../../../icons/filter.svg?react";
 import FilterClearIcon from "../../../icons/clear-filter.svg?react";
 import { delivertTitles, deliveryTypes } from "../../../../../shared/enums";
-import {
-    APIAccessTest,
-    APIGetOrders,
-    APIGetStatuses,
-} from "../../../common/ApiManager";
-import { createNotify, NotifyTypes } from "../../../App";
+import { APIGetOrders, APIGetStatuses } from "../../../common/ApiManager";
+import { createNotify, navigate, NotifyTypes } from "../../../App";
 import Loading from "../../../modules/PageTemplate/Loading";
 import { selections } from "../../../common/SelectTransformers";
 
@@ -62,8 +57,6 @@ export class OrderListViewModel extends ViewModel<unknown, Props> {
     }
 
     @observable
-    loading = true;
-    @observable
     statuses: string[] = [];
     @observable
     currentStatus: any = undefined;
@@ -71,25 +64,13 @@ export class OrderListViewModel extends ViewModel<unknown, Props> {
     currentDeliveryType: any = undefined;
     @observable
     data: DataTable[] = [];
-    nav = { navigate: (to: string) => {} };
 
     loadPage = async () => {
-        if (!(await APIAccessTest())) {
-            this.nav.navigate("/admin/login");
-            createNotify(
-                "Авторизация",
-                "Для открытия данной страницы необходима авторизация!",
-                NotifyTypes.ERROR,
-                3
-            );
-            return;
-        }
         APIGetStatuses().then(
             action((res) => {
                 if (!("errors" in res)) this.statuses = res;
             })
         );
-        this.loading = false;
         this.loadData();
     };
 
@@ -134,8 +115,8 @@ export class OrderListViewModel extends ViewModel<unknown, Props> {
 
 const OrderList = view(OrderListViewModel)<Props>(({ viewModel }) => {
     return (
-        <BaseTemplate backUrl="/admin/menu" nav={viewModel.nav} logout>
-            <Loading loading={viewModel.loading}>
+        <BaseTemplate logout back admin>
+            <Loading needAuth>
                 <div className={cl.OrderList}>
                     <h1>Список заказов</h1>
                     <div className={cl.FilterList}>
@@ -183,9 +164,7 @@ const OrderList = view(OrderListViewModel)<Props>(({ viewModel }) => {
                         className={cl.Table}
                         onRow={(record) => ({
                             onClick: () => {
-                                viewModel.nav.navigate(
-                                    "/admin/order/" + record.key
-                                );
+                                navigate.current("/admin/order/" + record.key);
                             },
                         })}
                         rowClassName={() => cl.RowElement}

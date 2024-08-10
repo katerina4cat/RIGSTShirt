@@ -3,11 +3,12 @@ import { action, makeObservable, observable, runInAction } from "mobx";
 import cl from "./ProductList.module.scss";
 import pr from "../../../modules/ProductElement/ProductElement.module.scss";
 import { APIGetProductsInfo, IProductInfo } from "../../../common/ApiManager";
-import { createNotify, NotifyTypes } from "../../../App";
+import { createNotify, navigate, NotifyTypes } from "../../../App";
 import BaseTemplate from "../../../modules/PageTemplate/BaseTemplate";
 import AddElementLogo from "../../../icons/product-add.svg?react";
 import ProductElement from "../../../modules/ProductElement/ProductElement";
 import { Switch } from "antd";
+import Loading from "../../../modules/PageTemplate/Loading";
 
 interface Props {}
 
@@ -17,7 +18,6 @@ export class ProductListViewModel extends ViewModel<unknown, Props> {
         makeObservable(this);
         this.loadProducts();
     }
-    nav = { navigate: (to: string) => {} };
 
     loadProducts = async (deepth = 1): Promise<void> => {
         const res = await APIGetProductsInfo(true);
@@ -38,7 +38,7 @@ export class ProductListViewModel extends ViewModel<unknown, Props> {
     @observable
     productList: IProductInfo[] = [];
     goToProduct = (id?: number) => {
-        this.nav?.navigate("/admin/edit/" + id || "");
+        navigate.current("/admin/edit/" + id || "");
     };
     @observable
     showDeleted = false;
@@ -49,47 +49,49 @@ export class ProductListViewModel extends ViewModel<unknown, Props> {
 }
 const ProductList = view(ProductListViewModel)<Props>(({ viewModel }) => {
     return (
-        <BaseTemplate nav={viewModel.nav} backUrl="/admin/menu" logout>
-            <div className={cl.ProductList}>
-                <h1>Список товаров</h1>
-                <h4>
-                    Скрытые товары:{" "}
-                    <Switch
-                        value={viewModel.showDeleted}
-                        onChange={viewModel.setDeleted}
-                    />
-                </h4>
-                <div className={cl.Catalog}>
-                    <div
-                        className={pr.ProductElement}
-                        style={{ justifyContent: "center" }}
-                    >
-                        <AddElementLogo
-                            className={cl.Icon}
-                            onClick={() => viewModel.goToProduct()}
+        <BaseTemplate logout back admin>
+            <Loading needAuth>
+                <div className={cl.ProductList}>
+                    <h1>Список товаров</h1>
+                    <h4>
+                        Скрытые товары:{" "}
+                        <Switch
+                            value={viewModel.showDeleted}
+                            onChange={viewModel.setDeleted}
                         />
-                    </div>
-                    {viewModel.productList
-                        .filter((product) =>
-                            viewModel.showDeleted
-                                ? product.deleted
-                                : !product.deleted
-                        )
-                        .map((product) => (
-                            <ProductElement
-                                key={product.id}
-                                productID={product.id}
-                                title={product.title}
-                                price={product.price}
-                                showSale={product.showSale}
-                                previousPrice={product.previousPrice}
-                                onClick={() =>
-                                    viewModel.goToProduct(product.id)
-                                }
+                    </h4>
+                    <div className={cl.Catalog}>
+                        <div
+                            className={pr.ProductElement}
+                            style={{ justifyContent: "center" }}
+                        >
+                            <AddElementLogo
+                                className={cl.Icon}
+                                onClick={() => viewModel.goToProduct()}
                             />
-                        ))}
+                        </div>
+                        {viewModel.productList
+                            .filter((product) =>
+                                viewModel.showDeleted
+                                    ? product.deleted
+                                    : !product.deleted
+                            )
+                            .map((product) => (
+                                <ProductElement
+                                    key={product.id}
+                                    productID={product.id}
+                                    title={product.title}
+                                    price={product.price}
+                                    showSale={product.showSale}
+                                    previousPrice={product.previousPrice}
+                                    onClick={() =>
+                                        viewModel.goToProduct(product.id)
+                                    }
+                                />
+                            ))}
+                    </div>
                 </div>
-            </div>
+            </Loading>
         </BaseTemplate>
     );
 });

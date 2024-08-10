@@ -1,6 +1,9 @@
+import { IContext } from "app";
 import DBManager from "database/DBManager";
 import { IResultProduct, ISize } from "database/interfaces";
+import { ApiError } from "exceptions/errorService";
 import { ProductsQuery } from "graphql/models";
+import tokenService from "./tokenService";
 
 export const productsServices = {
     getProducts: async ({
@@ -35,7 +38,9 @@ FROM
             };`
         );
     },
-    addSize: async ({ size }: { size: string }) => {
+    addSize: async ({ size }: { size: string }, context: IContext) => {
+        const payload = await tokenService.validateAcessToken(context);
+        if (payload instanceof ApiError) return payload;
         await DBManager.query(`INSERT INTO size(title) VALUES("${size}");`);
         return (await DBManager.query(`SELECT LAST_INSERT_ID() as id`))[0].id;
     },

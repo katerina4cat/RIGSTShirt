@@ -1,6 +1,10 @@
 import { ViewModel, view } from "@yoskutik/react-vvm";
 import { makeObservable } from "mobx";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import {
+    createBrowserRouter,
+    NavigateFunction,
+    RouterProvider,
+} from "react-router-dom";
 import { roots } from "./router/routes";
 import { ConfigProvider, notification } from "antd";
 
@@ -19,6 +23,11 @@ export let createNotify = (
     type: NotifyTypes = NotifyTypes.INFO,
     duration: number = 2.5
 ) => {};
+
+export const navigate: { current: NavigateFunction } = {
+    current: () => {},
+};
+
 export const enum NotifyTypes {
     INFO,
     WARNING,

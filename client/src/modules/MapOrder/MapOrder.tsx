@@ -28,11 +28,7 @@ import {
 } from "../../common/MapPointerFilter";
 import { deliveryTypes } from "../../../../shared/enums";
 import MapMarker from "../MapMarker/MapMarker";
-import {
-    getPosEvent,
-    isTouchEvent,
-    LongClickHandler,
-} from "../LongClick/lognClick";
+import { getPosEvent, LongClickHandler } from "../LongClick/lognClick";
 import { createRef } from "react";
 
 interface Props {

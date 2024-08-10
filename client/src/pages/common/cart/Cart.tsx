@@ -9,7 +9,7 @@ import {
 import cartManager from "../../../common/CartManager";
 import { Button, Select } from "antd";
 import { selections } from "../../../common/SelectTransformers";
-import { createNotify, NotifyTypes } from "../../../App";
+import { createNotify, navigate, NotifyTypes } from "../../../App";
 
 interface Props {}
 
@@ -23,7 +23,6 @@ interface IProductInfo {
 }
 
 export class CartViewModel extends ViewModel<unknown, Props> {
-    nav = { navigate: (to: string) => {} };
     constructor() {
         super();
         makeObservable(this);
@@ -68,7 +67,7 @@ export class CartViewModel extends ViewModel<unknown, Props> {
 }
 const Cart = view(CartViewModel)<Props>(({ viewModel }) => {
     return (
-        <BaseTemplate nav={viewModel.nav} backUrl="/">
+        <BaseTemplate back>
             <div className={cl.Cart}>
                 <h3>Корзина</h3>
                 {cartManager.selectedProducts.map((cartRawProduct) => {
@@ -161,7 +160,7 @@ const Cart = view(CartViewModel)<Props>(({ viewModel }) => {
                             ₽
                         </div>
                     </div>
-                    <Button onClick={() => viewModel.nav.navigate("/order")}>
+                    <Button onClick={() => navigate.current("/order")}>
                         Оформить заказ
                     </Button>
                 </div>

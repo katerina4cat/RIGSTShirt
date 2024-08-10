@@ -1,17 +1,21 @@
 import { ViewModel, view } from "@yoskutik/react-vvm";
-import { action, computed, makeObservable, observable } from "mobx";
+import {
+    action,
+    computed,
+    makeObservable,
+    observable,
+    runInAction,
+} from "mobx";
 import cl from "./OrderInfo.module.scss";
 import {
-    APIAccessTest,
     APIChangeOrderStatus,
     APIGetOrderInfo,
-    APIGetSizes,
     APIGetStatuses,
     Orders,
 } from "../../../common/ApiManager";
 import BaseTemplate from "../../../modules/PageTemplate/BaseTemplate";
 import Loading from "../../../modules/PageTemplate/Loading";
-import { createNotify, NotifyTypes } from "../../../App";
+import { createNotify, navigate, NotifyTypes } from "../../../App";
 import { useParams } from "react-router-dom";
 import { delivertTitles, deliveryTypes } from "../../../../../shared/enums";
 import {
@@ -56,7 +60,6 @@ interface DataTable {
 }
 
 export class OrderInfoViewModel extends ViewModel<unknown, Props> {
-    nav = { navigate: (to: string) => {} };
     constructor() {
         super();
         makeObservable(this);
@@ -70,18 +73,8 @@ export class OrderInfoViewModel extends ViewModel<unknown, Props> {
 
     @action
     loadServerData = async () => {
-        if (!(await APIAccessTest())) {
-            this.nav.navigate("/admin/login");
-            createNotify(
-                "Авторизация",
-                "Для открытия данной страницы необходима авторизация!",
-                NotifyTypes.ERROR,
-                3
-            );
-            return;
-        }
         if (this.orderID === undefined) {
-            this.nav.navigate("/admin/menu");
+            navigate.current("/admin/menu");
             createNotify(
                 "Страница заказа",
                 "Не указан ID заказа!",
@@ -107,11 +100,11 @@ export class OrderInfoViewModel extends ViewModel<unknown, Props> {
                         3
                     )
                 );
-                this.nav.navigate("/admin/menu");
+                navigate.current("/admin/menu");
                 return;
             }
         } catch {
-            this.nav.navigate("/admin/menu");
+            navigate.current("/admin/menu");
             createNotify(
                 "Страница заказа",
                 "Такого заказа не существует!",
@@ -120,8 +113,10 @@ export class OrderInfoViewModel extends ViewModel<unknown, Props> {
             );
             return;
         }
-        this.orderInfo = res;
-        this.loading = false;
+        runInAction(() => {
+            this.orderInfo = res;
+            this.loading = false;
+        });
         this.loadAdress();
         APIGetStatuses().then(
             action((res) => {
@@ -145,7 +140,9 @@ export class OrderInfoViewModel extends ViewModel<unknown, Props> {
                 this.orderInfo?.deliveryType
             );
         }
-        this.adress = res;
+        runInAction(() => {
+            this.adress = res;
+        });
     };
 
     @observable
@@ -158,7 +155,7 @@ export class OrderInfoViewModel extends ViewModel<unknown, Props> {
     get data(): DataTable[] {
         if (!this.orderInfo) return [];
         return this.orderInfo.products.map((product) => ({
-            key: product.id!,
+            key: product.size!.toString() + product.id!,
             price: product.count * product.price,
             count: product.count,
             size: product.size!,
@@ -185,8 +182,8 @@ export class OrderInfoViewModel extends ViewModel<unknown, Props> {
 }
 const OrderInfo = view(OrderInfoViewModel)<Props>(({ viewModel }) => {
     return (
-        <BaseTemplate backUrl="/admin/orders" logout nav={viewModel.nav}>
-            <Loading loading={viewModel.loading}>
+        <BaseTemplate logout back admin>
+            <Loading loading={viewModel.loading} needAuth>
                 <div className={cl.OrderInfoBox}>
                     <div className={cl.OrderInfo}>
                         <h2>Информация о заказе №{viewModel.orderID}</h2>
@@ -288,6 +285,14 @@ const OrderInfo = view(OrderInfoViewModel)<Props>(({ viewModel }) => {
                             <Table
                                 columns={columns}
                                 dataSource={viewModel.data}
+                                onRow={(record) => ({
+                                    onClick: () => {
+                                        navigate.current(
+                                            "/product/" + record.key
+                                        );
+                                    },
+                                })}
+                                rowClassName={() => cl.RowElement}
                             />
                         </div>
                     </div>
